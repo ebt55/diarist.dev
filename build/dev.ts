@@ -1,7 +1,8 @@
 /**
  * `bun run dev`: builds, serves dist/ on http://localhost:4321 and rebuilds when
- * src/, site.config.json or a local docs source changes. The release is looked up
- * once per session. Changes to the build scripts need a restart.
+ * src/, site.config.json, a local docs source, the benchmark data or a screenshot
+ * changes. The release is looked up once per session. Changes to the build scripts
+ * need a restart.
  */
 import { existsSync, statSync, watch } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -46,11 +47,16 @@ await rebuild("start");
 watch(SRC, { recursive: true }, (_event, file) => schedule(`src/${file ?? ""}`));
 watch(path.join(ROOT, "site.config.json"), () => schedule("site.config.json"));
 
-// Local docs sources, when the sibling checkout is used.
+// Local sources (docs, benchmark data, screenshots), when the sibling checkout is used.
 const config = JSON.parse(await readFile(path.join(ROOT, "site.config.json"), "utf8"));
 const sibling = path.resolve(ROOT, config.localSource);
 if (existsSync(sibling) && process.env.DOCS_SOURCE !== "remote") {
-  const sources = new Set<string>(config.docs.map((d: { source: string }) => path.resolve(sibling, d.source)));
+  const sources = new Set<string>([
+    ...config.docs.map((d: { source: string }) => path.resolve(sibling, d.source)),
+    path.resolve(sibling, config.benchmarks),
+    path.resolve(sibling, config.screenshot.source, `${config.screenshot.light}.png`),
+    path.resolve(sibling, config.screenshot.source, `${config.screenshot.dark}.png`),
+  ]);
   for (const dir of new Set([...sources].map((s) => path.dirname(s)))) {
     watch(dir, (_event, file) => {
       if (file && sources.has(path.resolve(dir, file.toString()))) schedule(`docs source ${file}`);

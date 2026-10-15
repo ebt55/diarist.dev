@@ -677,3 +677,77 @@ tbody th { font-weight: 400; }
 }
 .doc-index a { font-weight: 600; }
 .doc-index span { display: block; color: var(--muted); font-size: 0.9375rem; }
+
+/* Built pages without a sidebar (/models/): one column up to 780 px */
+
+.page {
+  max-width: calc(780px + 2 * var(--gutter));
+  padding-top: 28px;
+  padding-bottom: 72px;
+}
+@media (min-width: 880px) { .page { padding-top: 44px; } }
+.page h1 { font-size: clamp(1.9rem, 2.2vw + 1.2rem, 2.6rem); margin-bottom: 0.5em; }
+.page h2 { font-size: 1.5rem; margin-top: 2em; }
+.page h3 { font-size: 1.15rem; margin-top: 1.6em; }
+.page-lede { max-width: 44em; }
+.rule { max-width: 46em; margin-bottom: 0.6em; }
+.page .table-wrap { margin-bottom: 1.2em; }
+.pick th, .pick td { min-width: 6em; }
+.pick td:last-child { min-width: 12em; }
+.links a + a { margin-left: 1.25em; }
+
+/* Charts: inline SVG from build/charts.ts. Bars are percentages of the width; text is CSS-sized. */
+
+.chart-figure { margin: 1.2em 0 2.2em; }
+.chart {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  font-family: var(--font);
+}
+.chart text { fill: var(--text); font-size: 0.8125rem; }
+.chart .c-label { font-weight: 600; }
+.chart .c-meta,
+.chart .c-tick,
+.chart .c-axis,
+.chart .c-empty { fill: var(--muted); font-size: 0.75rem; }
+.chart .c-legend { font-size: 0.75rem; }
+.chart .c-note { fill: var(--muted); font-weight: 400; }
+.chart .c-value { font-variant-numeric: tabular-nums; }
+.chart .c-grid { stroke: var(--rule); stroke-width: 1; }
+.chart .c-bar.s0 { fill: var(--speaker-1); }
+.chart .c-bar.s1 { fill: var(--speaker-2); }
+.chart .c-bar.faded { opacity: 0.6; }
+.chart .c-short { display: none; }
+@media (max-width: 479px) {
+  .chart .c-long { display: none; }
+  .chart .c-short { display: inline; }
+}
+.chart-figure figcaption {
+  color: var(--muted);
+  font-size: 0.875rem;
+  max-width: 46em;
+  margin-top: 0.3em;
+}
+.chart-data { margin-top: 0.7em; font-size: 0.9375rem; }
+.chart-data summary {
+  cursor: pointer;
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  width: max-content;
+}
+.chart-data .table-wrap { margin-top: 0.8em; }
+.chart-data th, .chart-data td { min-width: 6em; }
+.used {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0.1em 0.4em;
+  margin-left: 0.4em;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  white-space: nowrap;
+}

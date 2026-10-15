@@ -8,8 +8,11 @@
  *     every #fragment to an id. External URLs are listed by host; an external resource
  *     that a page would load (image, script, stylesheet) is an error.
  *  3. Voice: the visible text of every page is searched for the words DESIGN.md
- *     section 2 rules out, exclamation marks and emoji (code blocks are skipped).
- *  4. Weight: the landing page's HTML plus CSS, and its total with images.
+ *     section 2 rules out, exclamation marks and emoji (code blocks are skipped); the
+ *     site's own pages also for the comparatives and slogans it rules out.
+ *  4. Weight: the landing page's HTML plus CSS (60 KB) and its total with images
+ *     (600 KB); the models page's HTML plus CSS (120 KB).
+ *  5. Hosting files: dist/_headers and dist/_redirects for Cloudflare Pages.
  *
  * Exits non-zero on any error.
  */
@@ -212,8 +215,10 @@ function parse(html: string, file: string): Parsed {
         }
         const content = rest.slice(0, cm.index);
         if (name === "title") {
-          out.title = decodeEntities(content).trim();
-          out.text.push({ text: out.title, line });
+          const t = decodeEntities(content).trim();
+          // The first <title> is the page's; later ones belong to the inline SVG charts.
+          if (!out.title) out.title = t;
+          out.text.push({ text: t, line });
         }
         i = j + cm.index + cm[0].length;
         continue;
@@ -257,9 +262,26 @@ const config = JSON.parse(await readFile(path.join(ROOT, "site.config.json"), "u
 for (const d of config.docs as { slug: string }[]) {
   if (!existsSync(path.join(DIST, "docs", d.slug, "index.html"))) errors.push(`missing page: docs/${d.slug}/index.html`);
 }
-if (!existsSync(path.join(DIST, ".nojekyll"))) errors.push("missing dist/.nojekyll");
-if (!existsSync(path.join(DIST, "CNAME"))) errors.push("missing dist/CNAME");
-else if ((await readFile(path.join(DIST, "CNAME"), "utf8")).trim() !== "diarist.dev") errors.push("dist/CNAME is not diarist.dev");
+if (!existsSync(path.join(DIST, "models", "index.html"))) errors.push("missing page: models/index.html");
+
+// Cloudflare Pages reads these two files from the output directory (DESIGN.md section 8).
+const headersFile = path.join(DIST, "_headers");
+if (!existsSync(headersFile)) errors.push("missing dist/_headers");
+else {
+  const text = await readFile(headersFile, "utf8");
+  for (const name of ["Content-Security-Policy", "X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy", "Cache-Control"]) {
+    if (!text.includes(`\n  ${name}: `)) errors.push(`dist/_headers does not set ${name}`);
+  }
+  text.split("\n").forEach((line, i) => {
+    if (line.length > 2000) errors.push(`dist/_headers:${i + 1}: over Cloudflare's 2000-character line limit`);
+  });
+}
+const redirectsFile = path.join(DIST, "_redirects");
+if (!existsSync(redirectsFile)) errors.push("missing dist/_redirects");
+else if (!/^\S+ \S+ 30[1278]$/m.test(await readFile(redirectsFile, "utf8"))) errors.push("dist/_redirects has no `source destination code` line");
+for (const stale of ["CNAME", ".nojekyll"]) {
+  if (existsSync(path.join(DIST, stale))) errors.push(`dist/${stale} belongs to GitHub Pages, which no longer hosts the site`);
+}
 
 for (const [file, p] of parsed) {
   const where = rel(file);
@@ -431,9 +453,20 @@ const FORBIDDEN: [RegExp, string][] = [
   [/!/, "exclamation mark"],
   [/[\p{Emoji_Presentation}\u{FE0F}]/u, "emoji"],
 ];
+// The comparatives and slogans DESIGN.md section 2 rules out of the site's own copy. The
+// rendered docs carry the app repository's text (the model guide compares models by their
+// numbers), so they are checked for the words above but not for these.
+const COMPARATIVES: [RegExp, string][] = [
+  [/\bMost /, 'comparative "Most "'],
+  [/\bbetter than\b/i, 'comparative "better than"'],
+  [/\bthe point\b/i, 'slogan "the point"'],
+  [/\bpromised\b/i, 'slogan "promised"'],
+];
+const isRenderedDoc = (where: string) => /^docs\/[^/]+\/index\.html$/.test(where);
 let voiceHits = 0;
 for (const [file, p] of parsed) {
   const where = rel(file);
+  const rules = isRenderedDoc(where) ? FORBIDDEN : [...FORBIDDEN, ...COMPARATIVES];
   const chunks = [...p.text];
   for (const el of p.elements) {
     for (const a of ["alt", "aria-label", "title"]) {
@@ -446,7 +479,7 @@ for (const [file, p] of parsed) {
     }
   }
   for (const { text, line } of chunks) {
-    for (const [re, label] of FORBIDDEN) {
+    for (const [re, label] of rules) {
       const m = re.exec(text);
       if (m) {
         voiceHits++;
@@ -457,15 +490,9 @@ for (const [file, p] of parsed) {
   }
 }
 
-// ---------------------------------------------------------------- landing page weight
+// ---------------------------------------------------------------- page weight
 
 const KB = (n: number) => `${(n / 1024).toFixed(1)} KB`;
-const indexFile = path.join(DIST, "index.html");
-const index = parsed.get(indexFile)!;
-const htmlBytes = statSync(indexFile).size;
-const cssBytes = index.elements
-  .filter((e) => e.name === "link" && e.attrs.get("rel") === "stylesheet")
-  .reduce((sum, e) => sum + statSync(path.resolve(DIST, e.attrs.get("href")!)).size, 0);
 
 // Images a light-scheme desktop browser fetches: per <picture> the first source without a
 // media query (or the img), at its largest srcset candidate, plus the SVG favicon.
@@ -474,21 +501,39 @@ const largest = (srcset: string) => {
   cands.sort((a, b) => parseInt(b[1] ?? "0") - parseInt(a[1] ?? "0"));
   return cands[0][0];
 };
-const imageFiles = new Set<string>();
-for (const img of index.elements.filter((e) => e.name === "img")) {
-  let chosen = img.attrs.get("srcset") ? largest(img.attrs.get("srcset")!) : img.attrs.get("src")!;
-  if (img.picture !== null) {
-    const source = index.elements.find((e) => e.name === "source" && e.picture === img.picture && !e.attrs.has("media"));
-    if (source) chosen = largest(source.attrs.get("srcset")!);
+
+function pageWeight(relPage: string) {
+  const file = path.join(DIST, relPage);
+  const dir = path.dirname(file);
+  const page = parsed.get(file);
+  if (!page) return { htmlBytes: 0, cssBytes: 0, imageBytes: 0, total: 0 };
+  const htmlBytes = statSync(file).size;
+  const cssBytes = page.elements
+    .filter((e) => e.name === "link" && e.attrs.get("rel") === "stylesheet")
+    .reduce((sum, e) => {
+      const css = path.resolve(dir, e.attrs.get("href")!);
+      return sum + (existsSync(css) ? statSync(css).size : 0);
+    }, 0);
+  const imageFiles = new Set<string>();
+  for (const img of page.elements.filter((e) => e.name === "img")) {
+    let chosen = img.attrs.get("srcset") ? largest(img.attrs.get("srcset")!) : img.attrs.get("src")!;
+    if (img.picture !== null) {
+      const source = page.elements.find((e) => e.name === "source" && e.picture === img.picture && !e.attrs.has("media"));
+      if (source) chosen = largest(source.attrs.get("srcset")!);
+    }
+    imageFiles.add(path.resolve(dir, chosen));
   }
-  imageFiles.add(path.resolve(DIST, chosen));
+  const svgIcon = page.elements.find((e) => e.name === "link" && e.attrs.get("rel") === "icon" && e.attrs.get("type") === "image/svg+xml");
+  if (svgIcon) imageFiles.add(path.resolve(dir, svgIcon.attrs.get("href")!));
+  const imageBytes = [...imageFiles].reduce((s, f) => s + (existsSync(f) ? statSync(f).size : 0), 0);
+  return { htmlBytes, cssBytes, imageBytes, total: htmlBytes + cssBytes + imageBytes };
 }
-const svgIcon = index.elements.find((e) => e.name === "link" && e.attrs.get("rel") === "icon" && e.attrs.get("type") === "image/svg+xml");
-if (svgIcon) imageFiles.add(path.resolve(DIST, svgIcon.attrs.get("href")!));
-const imageBytes = [...imageFiles].reduce((s, f) => s + (existsSync(f) ? statSync(f).size : 0), 0);
-const total = htmlBytes + cssBytes + imageBytes;
-if (htmlBytes + cssBytes > 60 * 1024) errors.push(`landing page HTML plus CSS is ${KB(htmlBytes + cssBytes)}, over the 60 KB budget`);
-if (total > 600 * 1024) errors.push(`landing page total is ${KB(total)}, over the 600 KB budget`);
+
+const index = pageWeight("index.html");
+const models = pageWeight(path.join("models", "index.html"));
+if (index.htmlBytes + index.cssBytes > 60 * 1024) errors.push(`landing page HTML plus CSS is ${KB(index.htmlBytes + index.cssBytes)}, over the 60 KB budget`);
+if (index.total > 600 * 1024) errors.push(`landing page total is ${KB(index.total)}, over the 600 KB budget`);
+if (models.htmlBytes + models.cssBytes > 120 * 1024) errors.push(`models page HTML plus CSS is ${KB(models.htmlBytes + models.cssBytes)}, over the 120 KB budget`);
 const distBytes = allFiles.reduce((s, f) => s + statSync(f).size, 0);
 
 // ---------------------------------------------------------------- report
@@ -501,10 +546,14 @@ console.log(`  HTML well-formedness: ${parseErrors ? `${parseErrors} error(s)` :
 console.log(`  internal links and fragments checked: ${internalChecked}`);
 console.log(`  external hosts linked: ${list(linkHosts)}`);
 console.log(`  external hosts loaded as resources: ${list(resourceHosts)}`);
-console.log(`  voice (forbidden words, "!", emoji): ${voiceHits ? `${voiceHits} hit(s)` : "clean"}`);
+console.log(`  voice (forbidden words, comparatives, "!", emoji): ${voiceHits ? `${voiceHits} hit(s)` : "clean"}`);
 console.log(
-  `  landing page: HTML ${KB(htmlBytes)} + CSS ${KB(cssBytes)} = ${KB(htmlBytes + cssBytes)}; ` +
-    `with images (light scheme, largest candidates) ${KB(total)}`,
+  `  landing page: HTML ${KB(index.htmlBytes)} + CSS ${KB(index.cssBytes)} = ${KB(index.htmlBytes + index.cssBytes)}; ` +
+    `with images (light scheme, largest candidates) ${KB(index.total)}`,
+);
+console.log(
+  `  models page: HTML ${KB(models.htmlBytes)} + CSS ${KB(models.cssBytes)} = ${KB(models.htmlBytes + models.cssBytes)}; ` +
+    `with images ${KB(models.total)}`,
 );
 console.log(`  dist/ total: ${KB(distBytes)}`);
 for (const w of warnings) console.warn(`warning: ${w}`);

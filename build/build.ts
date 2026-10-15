@@ -1,28 +1,38 @@
 /**
  * Builds diarist.dev into dist/.
  *
- *  1. Copies the static files (src/assets, styles.css, CNAME, .nojekyll).
+ *  1. Copies the static files (src/assets) and writes styles.css under a hashed name,
+ *     plus _headers and _redirects for Cloudflare Pages.
  *  2. Renders the docs pages from the app repository's Markdown.
  *  3. Injects the current release (version, installer size, download URL) from
  *     the updater manifest, falling back to site.config.json without a network.
- *  4. Converts the screenshots to AVIF and WebP with sharp.
+ *  4. Reads the hero screenshots from the app repository and converts them to AVIF
+ *     and WebP with sharp.
+ *  5. Reads docs/eval/benchmarks.json from the app repository and builds /models/
+ *     with four inline SVG charts (build/charts.ts).
  *
- * Exits non-zero when a docs source is missing or empty: never publish an empty page.
+ * Exits non-zero when a source is missing, empty or malformed: never publish an
+ * empty page or a chart without its data.
  *
  * Environment:
- *   DOCS_SOURCE=local|remote  where the Markdown comes from. Default: remote in CI,
- *                             otherwise the sibling checkout (../meet-assist) when it exists.
+ *   DOCS_SOURCE=local|remote  where the app repository's files come from. Default:
+ *                             remote in CI, otherwise the sibling checkout
+ *                             (../meet-assist) when it exists.
  *   OFFLINE=1                 skip the release lookup and use site.config.json.
  */
 import { existsSync } from "node:fs";
 import { copyFile, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import MarkdownIt from "markdown-it";
+import { asrChart, diarizationChart, measuredChart, parseBenchmarks, vramChart, type ChartSummary } from "./charts.ts";
 
 export const ROOT = path.resolve(import.meta.dir, "..");
 export const SRC = path.join(ROOT, "src");
 export const DIST = path.join(ROOT, "dist");
 const CACHE = path.join(ROOT, "node_modules", ".cache", "diarist-site");
+
+/** Files whose names carry a content hash live here; _headers marks them immutable. */
+const HASHED = "assets/h";
 
 export type Release = {
   version: string;
@@ -44,7 +54,8 @@ type Config = {
   blobBase: string;
   editBase: string;
   localSource: string;
-  screenshot: { light: string; dark: string; widths: number[]; sizes: string; alt: string };
+  benchmarks: string;
+  screenshot: { source: string; light: string; dark: string; widths: number[]; sizes: string; alt: string };
   release: Release;
   docs: DocEntry[];
 };
@@ -60,6 +71,7 @@ export type BuildResult = {
   errors: string[];
   warnings: string[];
   pages: string[];
+  charts: ChartSummary[];
 };
 
 // ---------------------------------------------------------------- helpers
@@ -69,6 +81,11 @@ const escapeHtml = (s: string) =>
 
 function formatSize(bytes: number): string {
   return `${(bytes / 1048576).toFixed(1)} MB`;
+}
+
+/** "2026-10-15" as "15 Oct 2026". */
+function longDate(iso: string): string {
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 }
 
 async function fetchWithTimeout(url: string, init: RequestInit = {}, ms = 15000): Promise<Response> {
@@ -91,6 +108,18 @@ function pngSize(buf: Uint8Array): { width: number; height: number } {
   const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
   if (view.getUint32(0) !== 0x89504e47) throw new Error("not a PNG file");
   return { width: view.getUint32(16), height: view.getUint32(20) };
+}
+
+const shortHash = (data: Uint8Array | string) => Bun.hash(data).toString(16).padStart(16, "0").slice(0, 10);
+
+/** Writes data as assets/h/<base>.<hash><ext> and returns that path, relative to dist/. */
+async function emitHashed(name: string, data: Uint8Array | string): Promise<string> {
+  const ext = path.extname(name);
+  const base = name.slice(0, name.length - ext.length);
+  const rel = `${HASHED}/${base}.${shortHash(data)}${ext}`;
+  await mkdir(path.join(DIST, HASHED), { recursive: true });
+  await writeFile(path.join(DIST, rel), data);
+  return rel;
 }
 
 // ---------------------------------------------------------------- release
@@ -141,7 +170,7 @@ async function resolveRelease(config: Config, warnings: string[]): Promise<Relea
   }
 }
 
-// ---------------------------------------------------------------- docs sources
+// ---------------------------------------------------------------- sources in the app repository
 
 type SourceMode = "local" | "remote";
 
@@ -152,28 +181,36 @@ function sourceMode(config: Config): SourceMode {
   return existsSync(path.resolve(ROOT, config.localSource)) ? "local" : "remote";
 }
 
-async function readSource(
+async function readSourceBytes(
   rel: string,
   mode: SourceMode,
   config: Config,
-): Promise<{ text: string } | { error: string }> {
+): Promise<{ bytes: Uint8Array } | { error: string }> {
   if (mode === "local") {
     const file = path.resolve(ROOT, config.localSource, rel);
     if (!existsSync(file)) return { error: `not found: ${file}` };
-    const text = (await readFile(file, "utf8")).replace(/\r\n/g, "\n");
-    if (!text.trim()) return { error: `empty file: ${file}` };
-    return { text };
+    const bytes = new Uint8Array(await readFile(file));
+    if (!bytes.length) return { error: `empty file: ${file}` };
+    return { bytes };
   }
   const url = config.rawBase + rel;
   try {
-    const res = await fetchWithTimeout(url);
+    const res = await fetchWithTimeout(url, {}, 30000);
     if (!res.ok) return { error: `HTTP ${res.status}: ${url}` };
-    const text = (await res.text()).replace(/\r\n/g, "\n");
-    if (!text.trim()) return { error: `empty response: ${url}` };
-    return { text };
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    if (!bytes.length) return { error: `empty response: ${url}` };
+    return { bytes };
   } catch (e) {
     return { error: `${errorText(e)}: ${url}` };
   }
+}
+
+async function readSource(rel: string, mode: SourceMode, config: Config): Promise<{ text: string } | { error: string }> {
+  const r = await readSourceBytes(rel, mode, config);
+  if ("error" in r) return r;
+  const text = new TextDecoder("utf-8").decode(r.bytes).replace(/\r\n/g, "\n");
+  if (!text.trim()) return { error: `empty: ${rel}` };
+  return { text };
 }
 
 // ---------------------------------------------------------------- Markdown
@@ -329,6 +366,7 @@ function fill(template: string, vars: Record<string, string>, where: string): st
   });
 }
 
+/** The per-page meta CSP. The response header in _headers repeats it for every page. */
 function csp(extraImgHosts: string[]): string {
   const img = ["'self'", ...extraImgHosts].join(" ");
   return [
@@ -342,13 +380,41 @@ function csp(extraImgHosts: string[]): string {
   ].join("; ");
 }
 
+// ---------------------------------------------------------------- Cloudflare Pages files
+
+function headersFile(extraImgHosts: string[]): string {
+  const img = ["'self'", "data:", ...extraImgHosts].join(" ");
+  return [
+    "# Response headers for Cloudflare Pages (DESIGN.md section 8). Written by build/build.ts.",
+    "",
+    "/*",
+    `  Content-Security-Policy: default-src 'self'; img-src ${img}; style-src 'self'; script-src 'none'; frame-ancestors 'none'`,
+    "  X-Content-Type-Options: nosniff",
+    "  Referrer-Policy: no-referrer",
+    "  Permissions-Policy: camera=(), microphone=(), geolocation=()",
+    "",
+    "# Files under assets/h/ carry a content hash in their name, so they can be cached for a year.",
+    `/${HASHED}/*`,
+    "  Cache-Control: public, max-age=31536000, immutable",
+    "",
+  ].join("\n");
+}
+
+const REDIRECTS = [
+  "# Redirects for Cloudflare Pages (DESIGN.md section 8). Written by build/build.ts.",
+  "https://www.diarist.dev/* https://diarist.dev/:splat 301",
+  "",
+].join("\n");
+
 // ---------------------------------------------------------------- screenshots
 
-async function buildScreenshot(config: Config, warnings: string[]): Promise<string> {
-  const { light, dark, widths, sizes, alt } = config.screenshot;
-  const srcDir = path.join(SRC, "assets", "screenshots");
-  const outDir = path.join(DIST, "assets", "screenshots");
-  await mkdir(outDir, { recursive: true });
+async function buildScreenshot(
+  config: Config,
+  mode: SourceMode,
+  warnings: string[],
+  errors: string[],
+): Promise<string> {
+  const { source, light, dark, widths, sizes, alt } = config.screenshot;
 
   // sharp is optional: without it the PNGs ship as they are.
   let sharp: any = null;
@@ -362,42 +428,51 @@ async function buildScreenshot(config: Config, warnings: string[]): Promise<stri
   const made: Record<string, { width: number; height: number; avif: string[]; webp: string[]; png?: string }> = {};
 
   for (const name of [light, dark]) {
-    const srcFile = path.join(srcDir, `${name}.png`);
-    if (!existsSync(srcFile)) throw new Error(`missing screenshot: ${srcFile}`);
-    const buf = await readFile(srcFile);
-    const { width, height } = pngSize(buf);
-    const entry = { width, height, avif: [] as string[], webp: [] as string[], png: undefined as string | undefined };
+    const rel = `${source}/${name}.png`;
+    const src = await readSourceBytes(rel, mode, config);
+    if ("error" in src) {
+      errors.push(`missing screenshot ${rel}: ${src.error}`);
+      continue;
+    }
+    const buf = src.bytes;
+    let size: { width: number; height: number };
+    try {
+      size = pngSize(buf);
+    } catch (e) {
+      errors.push(`screenshot ${rel}: ${errorText(e)}`);
+      continue;
+    }
+    const entry = { ...size, avif: [] as string[], webp: [] as string[], png: undefined as string | undefined };
 
     if (sharp) {
-      const key = `${Bun.hash(buf).toString(16)}-${Bun.hash(settings).toString(16)}`;
+      const key = `${shortHash(buf)}-${shortHash(settings)}`;
       await mkdir(CACHE, { recursive: true });
-      const targets = [...new Set(widths.map((w) => Math.min(w, width)))].sort((a, b) => a - b);
+      const targets = [...new Set(widths.map((w) => Math.min(w, size.width)))].sort((a, b) => a - b);
       for (const w of targets) {
         for (const fmt of ["avif", "webp"] as const) {
-          const outName = `${name}-${w}.${fmt}`;
-          const cached = path.join(CACHE, `${key}-${outName}`);
+          const cached = path.join(CACHE, `${key}-${name}-${w}.${fmt}`);
           if (!existsSync(cached)) {
             let img = sharp(buf);
-            if (w < width) img = img.resize({ width: w });
+            if (w < size.width) img = img.resize({ width: w });
             img = fmt === "avif" ? img.avif({ quality: 62, effort: 6 }) : img.webp({ quality: 82, effort: 6 });
             await img.toFile(cached);
           }
-          await copyFile(cached, path.join(outDir, outName));
-          entry[fmt].push(`assets/screenshots/${outName} ${w}w`);
+          const out = await emitHashed(`${name}-${w}.${fmt}`, new Uint8Array(await readFile(cached)));
+          entry[fmt].push(`${out} ${w}w`);
         }
       }
     } else {
-      await copyFile(srcFile, path.join(outDir, `${name}.png`));
-      entry.png = `assets/screenshots/${name}.png`;
+      entry.png = await emitHashed(`${name}.png`, buf);
     }
     made[name] = entry;
   }
+  if (!made[light] || !made[dark]) return "";
 
   const L = made[light];
   const D = made[dark];
   const altAttr = escapeHtml(alt);
   const dims = `width="${L.width}" height="${L.height}"`;
-  const dark_ = '(prefers-color-scheme: dark)';
+  const dark_ = "(prefers-color-scheme: dark)";
   const lines: string[] = ["    <picture>"];
   if (sharp) {
     lines.push(
@@ -418,24 +493,16 @@ async function buildScreenshot(config: Config, warnings: string[]): Promise<stri
 
 // ---------------------------------------------------------------- build
 
-async function copyStatic(errors: string[]) {
+async function copyStatic(errors: string[]): Promise<string> {
   await mkdir(path.join(DIST, "assets"), { recursive: true });
-  await cp(path.join(SRC, "assets"), path.join(DIST, "assets"), {
-    recursive: true,
-    // The PNG screenshots are converted, not shipped (unless sharp is missing).
-    filter: (from) => !(from.includes(`${path.sep}screenshots${path.sep}`) && from.endsWith(".png")),
-  });
-  await copyFile(path.join(SRC, "styles.css"), path.join(DIST, "assets", "styles.css"));
-  for (const required of ["favicon.png", "apple-touch-icon.png", "logo.svg", "wordmark.svg", "wordmark-dark.svg"]) {
+  await cp(path.join(SRC, "assets"), path.join(DIST, "assets"), { recursive: true });
+  for (const required of ["favicon.png", "apple-touch-icon.png", "logo.svg", "wordmark.svg", "wordmark-dark.svg", "social.png"]) {
     if (!existsSync(path.join(SRC, "assets", required))) {
       errors.push(`missing src/assets/${required}${required.endsWith(".png") ? " (run: bun run icons)" : ""}`);
     }
   }
-  for (const file of ["CNAME", ".nojekyll"]) {
-    const from = path.join(ROOT, file);
-    if (!existsSync(from)) errors.push(`missing ${file} in the repository root`);
-    else await copyFile(from, path.join(DIST, file));
-  }
+  const css = await readFile(path.join(SRC, "styles.css"), "utf8");
+  return emitHashed("styles.css", css);
 }
 
 export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
@@ -443,14 +510,16 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
   const errors: string[] = [];
   const warnings: string[] = [];
   const pages: string[] = [];
+  const charts: ChartSummary[] = [];
 
   const config: Config = JSON.parse(await readFile(path.join(ROOT, "site.config.json"), "utf8"));
   const release = opts.release ?? (await resolveRelease(config, warnings));
   const mode = sourceMode(config);
+  console.log(`sources: reading the app repository from ${mode === "local" ? path.resolve(ROOT, config.localSource) : config.rawBase}`);
 
   await rm(DIST, { recursive: true, force: true });
   await mkdir(DIST, { recursive: true });
-  await copyStatic(errors);
+  const styles = await copyStatic(errors);
 
   // Values shared by every page.
   const pre = release.version.includes("-") ? release.version.split("-")[1].split(".")[0] : "";
@@ -459,19 +528,24 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
     repo_url: config.repoUrl,
     issues_url: config.issuesUrl,
     roadmap_url: config.roadmapUrl,
+    blob_base: config.blobBase,
     download_url: escapeHtml(release.downloadUrl),
     release_url: `${config.repoUrl}/releases/tag/v${encodeURIComponent(release.version)}`,
     version: escapeHtml(release.version),
     installer_size: formatSize(release.installerSize),
     prerelease_tag: pre ? ` <span class="tag">${escapeHtml(pre)}</span>` : "",
+    styles,
+    models_current: "",
+    issues_current: "",
+    docs_current: "",
   };
 
   // ------------------------------------------------ landing page
   const description =
-    "Diarist records your meetings, or imports a recording, separates up to eight speakers, and keeps " +
-    "everything in a searchable database on your own PC. No cloud, no account, no Python.";
+    "Diarist records a meeting, or imports a recording, separates up to eight speakers, and stores the " +
+    "transcript in a searchable database on your computer. No cloud, no account, no Python.";
   const indexTemplate = await loadTemplate("index.html");
-  const screenshot = await buildScreenshot(config, warnings);
+  const screenshot = await buildScreenshot(config, mode, warnings, errors);
   const indexHtml = fill(
     indexTemplate,
     {
@@ -481,7 +555,6 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
       description: escapeHtml(description),
       canonical: `${config.siteUrl}/`,
       csp: csp([]),
-      docs_current: "",
       screenshot,
     },
     "src/index.html",
@@ -489,11 +562,56 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
   await writeFile(path.join(DIST, "index.html"), indexHtml);
   pages.push("index.html");
 
+  // ------------------------------------------------ models page
+  const benchSrc = await readSource(config.benchmarks, mode, config);
+  if ("error" in benchSrc) {
+    errors.push(`missing benchmark data ${config.benchmarks}: ${benchSrc.error}`);
+  } else {
+    try {
+      const b = parseBenchmarks(benchSrc.text);
+      const blob = config.blobBase;
+      const made = [diarizationChart(b, blob), asrChart(b, blob), measuredChart(b, blob), vramChart(b, blob)];
+      charts.push(...made.map((m) => m.summary));
+      const modelsTemplate = await loadTemplate("models.html");
+      const modelsHtml = fill(
+        modelsTemplate,
+        {
+          ...common,
+          root: "../",
+          models_current: ' aria-current="page"',
+          title: "Choosing a runtime package and models - Diarist",
+          description: escapeHtml(
+            "Which runtime package and which speech and speaker models for your PC, with the published benchmarks and Diarist's own measurements as charts.",
+          ),
+          canonical: `${config.siteUrl}/models/`,
+          csp: csp([]),
+          chart_diarization: made[0].html,
+          chart_asr: made[1].html,
+          chart_measured: made[2].html,
+          chart_vram: made[3].html,
+          machine: escapeHtml(b.machine),
+          updated: escapeHtml(b.updated),
+          updated_long: escapeHtml(longDate(b.updated)),
+          import_factor: String(b.speed_measured.import_realtime_factor),
+          live_first_text: String(b.speed_measured.live_first_text_s),
+          benchmarks_url: `${config.blobBase}${encodeRepoPath(config.benchmarks)}`,
+        },
+        "src/models.html",
+      );
+      await mkdir(path.join(DIST, "models"), { recursive: true });
+      await writeFile(path.join(DIST, "models", "index.html"), modelsHtml);
+      pages.push("models/index.html");
+    } catch (e) {
+      errors.push(`malformed benchmark data ${config.benchmarks}: ${errorText(e)}`);
+    }
+  }
+
   // ------------------------------------------------ docs
   const docsTemplate = await loadTemplate("docs.html");
   const docsBySource = new Map(config.docs.map((d) => [d.source, d]));
   const md = createMarkdown();
   const missing: string[] = [];
+  const docImageHosts = new Set<string>();
 
   const navFor = (current: string | null) => {
     const prefix = current === null ? "" : "../";
@@ -504,9 +622,6 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
     return `    <ul>\n${items.join("\n")}\n    </ul>`;
   };
 
-  console.log(
-    `docs: reading Markdown from ${mode === "local" ? path.resolve(ROOT, config.localSource) : config.rawBase}`,
-  );
   const sources = await Promise.all(config.docs.map((d) => readSource(d.source, mode, config)));
 
   for (const [i, doc] of config.docs.entries()) {
@@ -521,6 +636,7 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
     if (!env.title) warnings.push(`${doc.source} has no H1; using "${doc.label}" as the title`);
     const title = env.title ?? doc.label;
     const imgHosts = content.includes(`src="${config.rawBase}`) ? ["https://raw.githubusercontent.com"] : [];
+    for (const h of imgHosts) docImageHosts.add(h);
     const html = fill(
       docsTemplate,
       {
@@ -528,6 +644,7 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
         root: "../../",
         docs_root: "../",
         docs_current: ' aria-current="true"',
+        issues_current: doc.slug === "known-issues" ? ' aria-current="page"' : "",
         docs_index_current: "",
         title: escapeHtml(`${title} - Diarist docs`),
         description: escapeHtml(doc.summary),
@@ -554,7 +671,7 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
     .join("\n");
   const docsIndexContent = [
     '<h1 id="docs">Docs</h1>',
-    `<p>These pages are rendered from the Markdown files in the <a href="${config.repoUrl}">Diarist repository</a>, which stays the canonical copy. Each page links to its source on GitHub, where you can suggest a change.</p>`,
+    `<p>These pages are rendered from the Markdown files in the <a href="${config.repoUrl}">Diarist repository</a>, which stays the canonical copy. Each page links to its source on GitHub, where you can suggest a change. The <a href="../models/">models page</a> with the benchmark charts is built from the repository's data file.</p>`,
     `<ul class="doc-index">\n${indexItems}\n</ul>`,
   ].join("\n");
   const docsIndex = fill(
@@ -566,7 +683,7 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
       docs_current: ' aria-current="page"',
       docs_index_current: ' aria-current="page"',
       title: "Docs - Diarist",
-      description: "Installing Diarist, choosing models, privacy, measurements, the changelog and licences.",
+      description: "Installing Diarist, choosing models, known issues, privacy, measurements, the changelog and licences.",
       canonical: `${config.siteUrl}/docs/`,
       csp: csp([]),
       docs_nav: navFor(null),
@@ -580,19 +697,27 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
 
   for (const m of missing) errors.push(`missing docs source: ${m}`);
 
+  // ------------------------------------------------ Cloudflare Pages files
+  if (docImageHosts.size) {
+    warnings.push(`docs pages load images from ${[...docImageHosts].join(", ")}; _headers allows that host in img-src`);
+  }
+  await writeFile(path.join(DIST, "_headers"), headersFile([...docImageHosts]));
+  await writeFile(path.join(DIST, "_redirects"), REDIRECTS);
+
   // ------------------------------------------------ report
   const ms = Math.round(performance.now() - started);
   for (const w of warnings) console.warn(`warning: ${w}`);
   console.log(
     `release: ${release.version}, ${release.installerName}, ${release.installerSize} bytes (${formatSize(release.installerSize)})`,
   );
+  for (const c of charts) console.log(`chart: ${c.title} [from ${c.from}]`);
   console.log(`built ${pages.length} pages into dist/ in ${ms} ms`);
   if (errors.length) {
     console.error("\nBUILD FAILED");
     for (const e of errors) console.error(`  error: ${e}`);
     console.error("");
   }
-  return { ok: errors.length === 0, release, errors, warnings, pages };
+  return { ok: errors.length === 0, release, errors, warnings, pages, charts };
 }
 
 if (import.meta.main) {

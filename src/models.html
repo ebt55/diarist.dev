@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head}}
+</head>
+<body class="models-body">
+{{> header}}
+<main id="main" class="wrap page">
+  <h1>Choosing a runtime package and models</h1>
+  <p class="page-lede">Diarist runs one runtime and three models, all files in your data folder. This page is for picking them by what your PC has, and for seeing the numbers behind the defaults. Published numbers come from leaderboards and say so; measured numbers were taken on {{machine}}, {{updated_long}}. The charts are drawn from <a href="{{benchmarks_url}}">docs/eval/benchmarks.json</a> in the repository, which names the file each number comes from.</p>
+
+  <section id="pick" aria-labelledby="pick-title">
+    <h2 id="pick-title">By your GPU</h2>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Table">
+    <table class="pick">
+      <thead>
+        <tr><th scope="col">Your PC</th><th scope="col">Runtime package</th><th scope="col">Speech model</th><th scope="col">Diarizer</th><th scope="col">Live recording</th><th scope="col">File transcription</th><th scope="col">Note</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">No usable GPU</th><td>CPU (6 MB)</td><td>Nemotron 3.5 or the EN model</td><td>Nemotron 3 Diarization</td><td>Untested</td><td>Untested; much slower than real time</td><td>Shipped by the runtime, untested by us. The CPU package needs about 1.5 GB of RAM for the models plus working memory.</td></tr>
+        <tr><th scope="row">4 GB of GPU memory</th><td>CUDA (NVIDIA) or Vulkan (AMD, Intel, or an older NVIDIA driver)</td><td>Nemotron 3.5, with low-VRAM mode for imports</td><td>Nemotron 3 Diarization</td><td>Borderline: the 2 GB budget with its spikes sits next to the desktop's own use</td><td>1.82 GB peak should fit</td><td>Estimated, not measured. Parakeet will not fit. A user with a 4 GB card reported out-of-memory with the runtime's default of 16 slots, which Diarist does not use.</td></tr>
+        <tr><th scope="row">6 GB</th><td>CUDA or Vulkan</td><td>EN model for English; Nemotron 3.5 for other or mixed languages</td><td>Nemotron 3 Diarization</td><td>Comfortable</td><td>Comfortable</td><td>Estimated. Parakeet only with nothing else on the GPU.</td></tr>
+        <tr><th scope="row">8 GB and more</th><td>CUDA or Vulkan</td><td>EN model or Nemotron 3.5; Parakeet available as an experiment</td><td>Nemotron 3 Diarization</td><td>Yes</td><td>Yes</td><td>Everything. 10 GB, the development machine, leaves room for a browser and the meeting app on the same GPU.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="rule">CUDA package: the NVIDIA driver has to be new enough for CUDA 13. R580 or newer is the estimate; 610.88 is measured working.</p>
+    <p class="rule">CUDA kernels are built for Turing (sm_75), Ampere (sm_86), Ada (sm_89) and Blackwell (sm_120). An NVIDIA card older than Turing uses the Vulkan package.</p>
+    <p class="rule">The setup screen checks the GPU (NVML for NVIDIA, DXGI for any vendor), preselects the package and lets you change it. Package sizes: CUDA 98 MB, Vulkan 19 MB, CPU 6 MB. The app reads free GPU memory before it starts a job.</p>
+  </section>
+
+  <section id="diarization" aria-labelledby="diarization-title">
+    <h2 id="diarization-title">Speaker diarization, published</h2>
+    <p>Who spoke when is Nemotron 3 Diarization's job. On the one independent benchmark that scores every diarizer the same way, it has the lowest error rate of the systems listed. The row Diarist uses is drawn at full strength, the others lighter.</p>
+{{chart_diarization}}
+  </section>
+
+  <section id="asr" aria-labelledby="asr-title">
+    <h2 id="asr-title">Speech to text, published</h2>
+    <p>Speaker assignment needs the start and end of every word, and live recording needs a streaming model. The two models at the top of the leaderboard give no word timestamps and run only inside a Python stack, so Diarist cannot use them. Nemotron 3.5 has no leaderboard number yet; the measured comparison below is the basis for choosing between it and the EN model.</p>
+{{chart_asr}}
+  </section>
+
+  <section id="measured" aria-labelledby="measured-title">
+    <h2 id="measured-title">Measured in Diarist</h2>
+    <p>The evaluation harness in the repository runs the app's own command-line tool over the author's meetings and one public AMI meeting, and scores the result against a reference. Everything in this section was measured on an RTX 3080 10 GB, {{updated_long}}.</p>
+{{chart_measured}}
+    <p>Speaker attribution was the same with both models (0.3 percent of words to the wrong speaker on average over the four meetings, 0.6 at most), so the choice comes down to the words: the EN model keeps more of what was said; Nemotron 3.5 drops about 40 percent of filler words and covers 40+ languages with automatic detection.</p>
+{{chart_vram}}
+    <h3>Speed</h3>
+    <ul class="plain">
+      <li>Import: about {{import_factor}} times real time on the RTX 3080, so an hour of audio takes two to three minutes. Measured on a 77-minute file, {{updated_long}}.</li>
+      <li>Live: the first text appears about {{live_first_text}} s after speech starts, and two channels (microphone and system audio) keep up in real time. Measured on an RTX 3080 10 GB, {{updated_long}}.</li>
+    </ul>
+  </section>
+
+  <section id="caveats" aria-labelledby="caveats-title">
+    <h2 id="caveats-title">Caveats</h2>
+    <ul class="plain">
+      <li><strong>Parakeet drops speech.</strong> Parakeet TDT 0.6B v3 scores about 0.6 WER points lower than the EN model and writes real punctuation, but it silently dropped a 46-second span and two 10-second spans from a 77-minute file, and a 2-minute cut around the gap lost the same span. It is experimental and off by default.</li>
+      <li><strong>Eight speakers.</strong> The diarizer has eight labels per recording. A ninth person is merged into an existing label; split a recording that holds several meetings before importing it.</li>
+      <li><strong>Punctuation.</strong> The Nemotron models punctuate little (0.2 and 2.5 percent of words). Lines are split at pauses and speaker changes; punctuation restoration is on the roadmap.</li>
+      <li><strong>Overlap and far-field audio.</strong> People talking over each other, far-field microphones and noisy rooms degrade both the words and the labels; the AMI row above shows how much.</li>
+      <li><strong>Vulkan and CPU.</strong> Both packages are shipped by the runtime and untested by us.</li>
+      <li><strong>What to expect.</strong> On clean meeting audio about one word in 15 to 20 is wrong or missing with any of these models; on far-field room recordings about one in 9.</li>
+    </ul>
+    <p><a href="{{root}}docs/known-issues/">Known issues</a> lists each of these with its status.</p>
+  </section>
+
+  <section id="sources" aria-labelledby="sources-title">
+    <h2 id="sources-title">Sources</h2>
+    <ul class="plain">
+      <li>VoiceArena Diarization-Bench v1: 139 English conversations, collar 0, overlap scored. As cited in the model guide, October 2026.</li>
+      <li>Open ASR leaderboard: average WER over its English test sets. As cited in the model guide, October 2026.</li>
+      <li><a href="{{blob_base}}docs/04-model-guide.md">docs/04-model-guide.md</a>, the model and hardware guide (v0.2, 15 Oct 2026): the published tables, the GPU memory measurements and the package rules. Rendered here as <a href="{{root}}docs/models/">Models and hardware</a>.</li>
+      <li><a href="{{blob_base}}docs/eval/2026-10-15-nemotron_en.md">docs/eval/2026-10-15-nemotron_en.md</a> and <a href="{{blob_base}}docs/eval/2026-10-15-nemotron35.md">docs/eval/2026-10-15-nemotron35.md</a>: the evaluation runs, 15 Oct 2026. The recordings and the pipeline are described in <a href="{{root}}docs/eval/">How we measure</a>.</li>
+      <li><a href="{{blob_base}}docs/research/08-runtime-cli-contract.md">docs/research/08-runtime-cli-contract.md</a>, section 7: import speed and first-text latency, 15 Oct 2026.</li>
+      <li><a href="{{benchmarks_url}}">docs/eval/benchmarks.json</a>: the data file behind the charts, updated {{updated}}, with a <code>from</code> field per block naming the file its numbers come from.</li>
+    </ul>
+  </section>
+</main>
+{{> footer}}
+</body>
+</html>
