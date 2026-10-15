@@ -9,15 +9,15 @@
 
   <section class="hero wrap" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <h1 id="hero-title">Transcripts that know who said what.</h1>
-      <p class="lede">Diarist records your meetings, or imports a recording, separates up to eight speakers, and keeps everything in a searchable database on your own PC. No cloud, no account, no Python.</p>
+      <h1 id="hero-title">Meeting transcripts with speaker labels, on your own PC.</h1>
+      <p class="lede">Diarist records a meeting, or imports a recording, separates up to eight speakers, and stores the transcript in a searchable database on your computer. No cloud, no account, no Python.</p>
       <div class="actions">
         <a class="btn btn-primary" href="{{download_url}}">Download for Windows{{prerelease_tag}}</a>
         <a class="btn btn-secondary" href="{{repo_url}}">View on GitHub</a>
       </div>
       <p class="meta">{{version}}, {{installer_size}} installer. First run downloads the runtime and models, about 870 MB. Windows 10 and 11, NVIDIA GPU recommended. <a href="{{release_url}}">Release notes and checksum</a></p>
       <p class="small">Linux is planned. macOS is not: nobody on the project owns a Mac.</p>
-      <p class="small">Using a coding agent? Point Claude Code, Codex or similar at the <a href="{{root}}docs/agent-setup/">agent setup guide</a> and it checks your PC, picks the models and sets everything up.</p>
+      <p class="small">If you use a coding agent (Claude Code, Codex or similar), the <a href="{{root}}docs/agent-setup/">agent setup guide</a> lets it check your PC, pick the models and set everything up.</p>
     </div>
 
     <figure class="card" aria-label="Example transcript">
@@ -61,13 +61,12 @@
   </section>
 
   <section id="speakers" class="section wrap" aria-labelledby="speakers-title">
-    <h2 id="speakers-title">Speakers are the point</h2>
+    <h2 id="speakers-title">Speaker separation</h2>
     <div class="cols-2 cols-wide-left">
       <div class="col">
-        <p class="lead">Most local transcribers give you words. Diarist gives you who said them.</p>
-        <p>Speaker separation runs on NVIDIA's Nemotron 3 Diarization, the best system on the one independent benchmark that scores every diarizer the same way (DER 14.7 against 19 to 31 for the alternatives). Up to eight speakers per recording.</p>
-        <p>Measured on the author's own Zoom meetings, RTX 3080: 0.2 to 0.6 percent of words went to the wrong speaker; within a second of a speaker change, 7 to 9 percent.</p>
-        <p><a href="{{root}}docs/eval/">How we measure</a></p>
+        <p>Speaker separation runs on NVIDIA's Nemotron 3 Diarization. On VoiceArena Diarization-Bench v1, the one independent benchmark that scores every diarizer the same way, it has the lowest error rate of the systems listed: DER 14.7, against 19 to 31 for the others. Up to eight speakers per recording.</p>
+        <p>Measured on the author's own Zoom meetings on an RTX 3080: 0.2 to 0.6 percent of words went to the wrong speaker; within a second of a speaker change, 7 to 9 percent.</p>
+        <p class="links"><a href="{{root}}models/#diarization">The numbers, with charts</a> <a href="{{root}}docs/eval/">How we measure</a></p>
       </div>
       <div class="col">
         <h3>Where it struggles</h3>
@@ -82,8 +81,8 @@
   </section>
 
   <section id="harness" class="section wrap" aria-labelledby="harness-title">
-    <h2 id="harness-title">A harness, not a wrapper</h2>
-    <p class="lead lead-wide">Most transcription apps are a wrapper around one model. Diarist is built the other way round. The app is a harness; the models are files you own.</p>
+    <h2 id="harness-title">Models are files you own</h2>
+    <p class="lead lead-wide">Diarist is a harness for speech models, not an application built around one model. The runtime and the models are files in folders on your disk. The app's job is to run them together, tell you what it is doing, and stay out of the way.</p>
     <div class="blocks">
       <div class="block">
         <h3>Plain folders.</h3>
@@ -95,7 +94,7 @@
       </div>
       <div class="block">
         <h3>No gates.</h3>
-        <p>Skip setup and start anyway. Add a model the app has never heard of, by URL or by file. Pin a runtime version. Roll back by moving a folder.</p>
+        <p>Setup can be skipped. Models the app has never heard of can be added by URL or by file. A runtime version can be pinned, and rolled back by moving a folder.</p>
       </div>
       <div class="block">
         <h3>Nothing silent.</h3>
@@ -103,26 +102,26 @@
       </div>
       <div class="block">
         <h3>Measured swaps.</h3>
-        <p>Try a new model and compare it on your own recordings with the evaluation tools in the repository before you trust it.</p>
+        <p>A new model can be compared on your own recordings with the evaluation tools in the repository before you rely on it.</p>
       </div>
       <p class="block aside">If you have used ComfyUI, this will feel familiar. If you have not, you do not need to.</p>
     </div>
   </section>
 
   <section id="privacy" class="section wrap" aria-labelledby="privacy-title">
-    <h2 id="privacy-title">Nothing leaves your PC</h2>
+    <h2 id="privacy-title">Privacy</h2>
     <div class="cols-2 cols-wide-right">
       <p class="lead">Audio, transcripts, names, settings and logs stay in one folder on your computer.</p>
       <div class="col">
         <p>The app connects to the internet only when you press a button that says so: installing the runtime (from GitHub), downloading a model (from Hugging Face), checking for a newer runtime, or checking for updates. It never checks anything on its own. There is no account, no analytics and no crash reporting.</p>
         <p>This website is the same: no cookies, no analytics, no third-party requests.</p>
-        <p><a href="{{root}}docs/privacy/">Read the privacy page</a></p>
+        <p><a href="{{root}}docs/privacy/">The privacy page</a></p>
       </div>
     </div>
   </section>
 
   <section id="models" class="section wrap" aria-labelledby="models-title">
-    <h2 id="models-title">What you need</h2>
+    <h2 id="models-title">Requirements</h2>
     <div class="cols-2 tables">
       <div class="col">
         <h3>Runtime package by GPU</h3>
@@ -160,11 +159,11 @@
       <li>Nemotron Speech Streaming EN 0.6B (English, default, 668 MB)</li>
       <li>Nemotron 3.5 ASR Streaming (40+ languages, optional, 742 MB)</li>
     </ul>
-    <p><a href="{{root}}docs/models/">Which model for which PC</a></p>
+    <p><a href="{{root}}models/">Charts and the numbers behind these choices</a></p>
   </section>
 
   <section id="status" class="section wrap" aria-labelledby="status-title">
-    <h2 id="status-title">Measured, not promised</h2>
+    <h2 id="status-title">Status</h2>
     <p class="lead">0.1.0-beta.1 is the first public release.</p>
     <div class="cols-2">
       <div class="col">
@@ -175,7 +174,7 @@
           <li>The post-pass</li>
           <li>Search</li>
           <li>Export</li>
-          <li>The installer and updater</li>
+          <li>The installer</li>
         </ul>
       </div>
       <div class="col">
@@ -187,12 +186,12 @@
       </div>
     </div>
     <p class="prose">Next: punctuation restoration, better handling of speaker changes, recording without headphones, and recognising the same person across meetings.</p>
-    <p><a href="{{roadmap_url}}">Roadmap</a> and <a href="{{root}}docs/changelog/">changelog</a></p>
+    <p><a href="{{roadmap_url}}">Roadmap</a>, <a href="{{root}}docs/changelog/">changelog</a> and <a href="{{root}}docs/known-issues/">known issues</a></p>
   </section>
 
   <section id="open" class="section wrap" aria-labelledby="open-title">
     <h2 id="open-title">Open source</h2>
-    <p class="prose">MIT licence. The runtime (Apache-2.0) and the models (OpenMDW-1.1, NVIDIA Open Model License) are downloaded at first run under their own licences. Issues and pull requests on GitHub.</p>
+    <p class="prose">MIT licence. The runtime (Apache-2.0) and the models (OpenMDW-1.1, NVIDIA Open Model License) are downloaded at first run under their own licences. There is no paid tier, no licence key and no account. Free forever. Speaker separation is part of the app. Issues and pull requests on GitHub.</p>
     <div class="actions">
       <a class="btn btn-secondary" href="{{repo_url}}">GitHub</a>
       <a class="btn btn-secondary" href="{{issues_url}}">Report a problem</a>
