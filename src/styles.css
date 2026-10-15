@@ -651,13 +651,19 @@ tbody th { font-weight: 400; }
   white-space: pre;
 }
 
+/* Tables in the docs. The five-column known-issues tables must fit the content column at
+   desktop widths, so cells and the inline code in them may break anywhere: a code span
+   that cannot wrap (a pair of flags, a model path) otherwise sets a minimum width on its
+   column and pushes the last column past the edge. The scrolling wrapper from build.ts
+   stays as the fallback for narrow viewports, where the min-width floors add up to more
+   than the column. */
 .table-wrap {
   overflow-x: auto;
   margin: 0 0 1.3em;
 }
 .table-wrap table { margin: 0; }
-.doc th, .doc td { min-width: 6.5em; }
-.doc td code, .doc th code { overflow-wrap: normal; white-space: nowrap; }
+.doc th, .doc td { min-width: 6.5em; overflow-wrap: anywhere; }
+.doc td code, .doc th code { white-space: normal; overflow-wrap: anywhere; }
 
 .edit {
   margin: 0 0 1.2em;
