@@ -2,7 +2,7 @@
  * Builds diarist.dev into dist/.
  *
  *  1. Copies the static files (src/assets) and writes styles.css under a hashed name,
- *     plus _headers and _redirects for Cloudflare Pages.
+ *     plus _headers and 404.html for Cloudflare Workers static assets.
  *  2. Renders the docs pages from the app repository's Markdown.
  *  3. Injects the current release (version, installer size, download URL) from
  *     the updater manifest, falling back to site.config.json without a network.
@@ -380,12 +380,12 @@ function csp(extraImgHosts: string[]): string {
   ].join("; ");
 }
 
-// ---------------------------------------------------------------- Cloudflare Pages files
+// ---------------------------------------------------------------- Cloudflare files
 
 function headersFile(extraImgHosts: string[]): string {
   const img = ["'self'", "data:", ...extraImgHosts].join(" ");
   return [
-    "# Response headers for Cloudflare Pages (DESIGN.md section 8). Written by build/build.ts.",
+    "# Response headers for Cloudflare Workers static assets (DESIGN.md section 8). Written by build/build.ts.",
     "",
     "/*",
     `  Content-Security-Policy: default-src 'self'; img-src ${img}; style-src 'self'; script-src 'none'; frame-ancestors 'none'`,
@@ -399,12 +399,6 @@ function headersFile(extraImgHosts: string[]): string {
     "",
   ].join("\n");
 }
-
-const REDIRECTS = [
-  "# Redirects for Cloudflare Pages (DESIGN.md section 8). Written by build/build.ts.",
-  "https://www.diarist.dev/* https://diarist.dev/:splat 301",
-  "",
-].join("\n");
 
 // ---------------------------------------------------------------- screenshots
 
@@ -562,6 +556,25 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
   await writeFile(path.join(DIST, "index.html"), indexHtml);
   pages.push("index.html");
 
+  // ------------------------------------------------ 404 page
+  // Workers serves dist/404.html, with status 404, for any path without a file
+  // (not_found_handling in wrangler.jsonc). It appears at any URL, so its links are
+  // root-relative.
+  const notFoundHtml = fill(
+    await loadTemplate("404.html"),
+    {
+      ...common,
+      root: "/",
+      title: "Page not found - Diarist",
+      description: "There is no page at this address on diarist.dev.",
+      canonical: `${config.siteUrl}/404.html`,
+      csp: csp([]),
+    },
+    "src/404.html",
+  );
+  await writeFile(path.join(DIST, "404.html"), notFoundHtml);
+  pages.push("404.html");
+
   // ------------------------------------------------ models page
   const benchSrc = await readSource(config.benchmarks, mode, config);
   if ("error" in benchSrc) {
@@ -697,12 +710,13 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
 
   for (const m of missing) errors.push(`missing docs source: ${m}`);
 
-  // ------------------------------------------------ Cloudflare Pages files
+  // ------------------------------------------------ Cloudflare files
+  // No _redirects: the one redirect the site needs, www to apex, is a Redirect Rule in the
+  // zone, because Workers static assets skip _redirects lines with a host in the source.
   if (docImageHosts.size) {
     warnings.push(`docs pages load images from ${[...docImageHosts].join(", ")}; _headers allows that host in img-src`);
   }
   await writeFile(path.join(DIST, "_headers"), headersFile([...docImageHosts]));
-  await writeFile(path.join(DIST, "_redirects"), REDIRECTS);
 
   // ------------------------------------------------ report
   const ms = Math.round(performance.now() - started);

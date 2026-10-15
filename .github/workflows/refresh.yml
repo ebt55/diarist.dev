@@ -1,9 +1,11 @@
 name: Weekly refresh
 
 # The docs, the benchmark data and the release version are fetched from the app
-# repository at build time, so a rebuild without a commit keeps them current. This
-# calls the Cloudflare Pages deploy hook once a week and on demand. The hook URL is
-# the repository secret CF_PAGES_DEPLOY_HOOK; without it the job only prints a notice.
+# repository at build time, so a rebuild without a commit keeps them current. Workers
+# Builds only builds on a push, so this job builds the site here once a week and on
+# demand, runs the checks and deploys dist/ with wrangler, exactly as Workers Builds
+# does. It needs the repository secrets CLOUDFLARE_API_TOKEN (a token with Workers
+# Scripts: Edit) and CLOUDFLARE_ACCOUNT_ID; without them the job only prints a notice.
 
 on:
   schedule:
@@ -11,23 +13,52 @@ on:
     - cron: "17 5 * * 1"
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - name: Call the Cloudflare Pages deploy hook
+      - name: Check the Cloudflare secrets
+        id: secrets
         env:
-          HOOK: ${{ secrets.CF_PAGES_DEPLOY_HOOK }}
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ -z "$HOOK" ]; then
-            echo "::notice::CF_PAGES_DEPLOY_HOOK is not set, so nothing was refreshed. Create a deploy hook in the Cloudflare Pages project (Settings, Builds and deployments, Deploy hooks) and add its URL as a repository secret with that name."
+          if [ -z "$TOKEN" ] || [ -z "$ACCOUNT" ]; then
+            echo "::notice::CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID is not set, so nothing was refreshed. Add both as repository secrets (README.md, Weekly refresh)."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          code=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --request POST "$HOOK")
-          echo "The deploy hook answered HTTP $code."
-          case "$code" in
-            2*) ;;
-            *) echo "::error::The deploy hook did not accept the request (HTTP $code)."; exit 1 ;;
-          esac
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.configured == 'true'
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.secrets.outputs.configured == 'true'
+        with:
+          bun-version: 1.2.1
+
+      - name: Install dependencies
+        if: steps.secrets.outputs.configured == 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        if: steps.secrets.outputs.configured == 'true'
+        run: bun run build
+        env:
+          DOCS_SOURCE: remote
+
+      - name: Check
+        if: steps.secrets.outputs.configured == 'true'
+        run: bun run check
+
+      - name: Deploy with wrangler
+        if: steps.secrets.outputs.configured == 'true'
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy

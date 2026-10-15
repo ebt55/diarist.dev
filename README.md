@@ -46,7 +46,8 @@ What `bun run build` does:
    sharp, into `dist/assets/h/`. Without sharp it ships the PNGs and says so. Look at a new
    screenshot at full size in the app repository before it is committed there: the site
    publishes whatever is on `main`.
-7. Writes `dist/_headers` and `dist/_redirects` for Cloudflare Pages (see Deployment).
+7. Writes `dist/404.html` and `dist/_headers` for Cloudflare Workers static assets (see
+   Deployment).
 
 Docs rendering follows DESIGN.md section 7: headings get GitHub-style ids, links to another
 rendered file go to its site page, other relative links go to the file on GitHub, relative
@@ -57,54 +58,70 @@ so a chart fills its column, while the text keeps its CSS size and stays legible
 
 ## Deployment
 
-The site is hosted on **Cloudflare Pages**, connected to this GitHub repository. Every push
-to `main` is built and published by Cloudflare; GitHub Actions only runs the checks
-(`check.yml`) and the weekly refresh (`refresh.yml`). The output is plain static files, so
-`dist/` can be hosted anywhere else without changes.
+The site is hosted on **Cloudflare Workers** as static assets, built and deployed by
+**Workers Builds** from this GitHub repository (the same setup as ebinbt.dev; Cloudflare
+steers new static sites to Workers rather than Pages). Every push to `main` is built and
+published by Cloudflare; GitHub Actions runs the checks (`check.yml`) and the weekly refresh
+(`refresh.yml`). `wrangler.jsonc` at the repository root is the Worker's configuration: no
+Worker script, just `dist/` as the assets directory and `404.html` for paths without a file.
+The output is plain static files, so `dist/` can be hosted anywhere else without changes.
 
-### Pages project settings
+### Workers Builds settings
 
-Create the project in the Cloudflare dashboard (Workers & Pages, Create, Pages, Connect to
-Git, repository `ebt55/diarist.dev`) with:
+Create the Worker in the Cloudflare dashboard (Workers & Pages, Create, Import a repository,
+`ebt55/diarist.dev`) with:
 
 | Setting | Value |
 |---|---|
+| Project name | `diarist-dev` (the same as `name` in `wrangler.jsonc`) |
 | Production branch | `main` |
 | Build command | `bun install --frozen-lockfile && bun run build` |
-| Build output directory | `dist` |
-| Environment variable `DOCS_SOURCE` | `remote` |
-| Environment variable `BUN_VERSION` | `1.2.1` (the build image then uses the pinned bun) |
+| Deploy command | `npx wrangler deploy` (the default) |
+| Preview command | leave the default; `npx wrangler versions upload` also works and gives a version URL per branch instead of a preview URL |
+| Enable Preview builds | on is fine; other branches build the same way |
+| Protect with Cloudflare Access | off |
+| Advanced settings, build variable `DOCS_SOURCE` | `remote` |
+| Advanced settings, build variable `BUN_VERSION` | `1.2.1` |
 
-Set both variables for Production and Preview. Preview deployments for other branches are
-fine; they build the same way.
+Build variables are build-time only; the site has nothing at runtime. The Workers Builds
+image reads `BUN_VERSION` the way the Pages image did and uses that bun release; without it
+the image's default bun (1.2.15 at the time of writing) is used, which also works. `npx
+wrangler deploy` fetches the current wrangler, which is not a dependency of this repository.
+`bunx wrangler deploy --dry-run` runs the same configuration locally, without credentials,
+and reports what it would upload.
 
 ### Custom domain
 
-In the Pages project, Custom domains, add `diarist.dev` and `www.diarist.dev`.
+In the Worker: Settings, Domains & Routes, Add, Custom domain, `diarist.dev`; then the same
+for `www.diarist.dev`. The `diarist.dev` zone is on Cloudflare (nameservers at Porkbun point
+at Cloudflare), so Cloudflare creates the DNS records itself. Unlike Pages, a Workers custom
+domain needs its zone on Cloudflare. `.dev` is on the HSTS preload list, so the site only
+works over HTTPS; Cloudflare provides the certificate.
 
-- If the `diarist.dev` zone is on Cloudflare (nameservers at Porkbun pointed at Cloudflare,
-  as for ebinbt.dev), Pages creates the DNS records itself.
-- Otherwise, at Porkbun add `CNAME diarist.dev` pointing at `<project>.pages.dev` (the
-  project's `*.pages.dev` hostname) and the same for `www`, and let Cloudflare verify them.
-
-`.dev` is on the HSTS preload list, so the site only works over HTTPS; Cloudflare provides
-the certificate. `dist/_redirects` sends `https://www.diarist.dev/*` to `https://diarist.dev/`
-with a 301. Cloudflare documents `_redirects` sources as paths, so if that line is ignored,
-add a Redirect Rule for `www.diarist.dev` in the zone (Rules, Redirect Rules) instead.
+A custom domain matches its hostname exactly, and Workers static assets skip any
+`_redirects` line whose source names a host (wrangler prints "Only relative URLs are
+allowed"), so the `www` to apex redirect is a rule in the zone: Rules, Redirect Rules,
+create a rule for incoming requests where Hostname equals `www.diarist.dev`, type Dynamic,
+expression `concat("https://diarist.dev", http.request.uri.path)`, status 301, preserve
+query string. Redirect Rules run before the Worker. The build therefore writes no
+`_redirects` (Pages honoured the host-level line; DESIGN.md section 8).
 
 ### Weekly refresh
 
 The docs, the benchmark data and the release version come from the app repository at build
-time, so a rebuild without a commit keeps them current. `.github/workflows/refresh.yml` runs
-every Monday at 05:17 UTC and on manual dispatch, and POSTs to a Cloudflare Pages deploy
-hook. One-time setup:
+time, so a rebuild without a commit keeps them current. Workers Builds builds on a push, so
+`.github/workflows/refresh.yml` builds the site in GitHub Actions every Monday at 05:17 UTC
+and on manual dispatch, runs the checks, and deploys `dist/` with
+[`cloudflare/wrangler-action`](https://github.com/cloudflare/wrangler-action) (`wrangler
+deploy`, the same command Workers Builds runs). One-time setup, two repository secrets
+(GitHub: Settings, Secrets and variables, Actions):
 
-1. In the Pages project: Settings, Builds and deployments, Deploy hooks, create a hook for
-   the `main` branch and copy its URL.
-2. In this repository on GitHub: Settings, Secrets and variables, Actions, add a repository
-   secret named `CF_PAGES_DEPLOY_HOOK` with that URL.
+1. `CLOUDFLARE_API_TOKEN`: in the Cloudflare dashboard, Manage account, Account API tokens,
+   Create Token, template **Edit Cloudflare Workers**, scoped to this account. Its account
+   permission, Workers Scripts: Edit, is what `wrangler deploy` needs.
+2. `CLOUDFLARE_ACCOUNT_ID`: the account id shown on the Workers & Pages overview page.
 
-Without the secret the workflow prints a notice and does nothing.
+Without both secrets the workflow prints a notice and does nothing.
 
 ### Checks
 
@@ -112,26 +129,32 @@ Without the secret the workflow prints a notice and does nothing.
 `bun install --frozen-lockfile`, `DOCS_SOURCE=remote bun run build`, `bun run check`. It
 does not deploy.
 
-### Headers and redirects
+### Headers and the 404 page
 
-`bun run build` writes two files Cloudflare Pages reads from the output directory:
+`bun run build` writes two files Cloudflare Workers reads from the assets directory:
 
 - `dist/_headers`: for every page, `Content-Security-Policy: default-src 'self'; img-src
   'self' data:; style-src 'self'; script-src 'none'; frame-ancestors 'none'` (matching the
   meta CSP in each page), `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`
   and `Permissions-Policy: camera=(), microphone=(), geolocation=()`; and for `/assets/h/*`,
   whose file names carry a content hash, `Cache-Control: public, max-age=31536000,
-  immutable`. HTML stays on Cloudflare's default caching.
-- `dist/_redirects`: the `www` to apex redirect above.
+  immutable`. HTML stays on Cloudflare's default caching. Workers applies the file to static
+  asset responses with the same syntax and limits as Pages (100 rules, 2,000 characters a
+  line), and does not serve the file itself.
+- `dist/404.html`: served with status 404 for any path without a file
+  (`not_found_handling: "404-page"` in `wrangler.jsonc`). Its links are root-relative because
+  it is shown at any URL.
 
 ## Layout
 
 ```
 DESIGN.md              the brief
 site.config.json       URLs, the docs list, the benchmark and screenshot sources, fallback release
+wrangler.jsonc         Cloudflare Workers configuration: static assets from dist/, no Worker script
 src/index.html         landing page template ({{name}} slots, {{> partial}} includes)
 src/models.html        models page template; the charts are filled in by the build
 src/docs.html          docs page template
+src/404.html           the not-found page
 src/partials/          head, header, footer
 src/styles.css         the one stylesheet
 src/assets/            marks, icons, social preview
@@ -140,7 +163,7 @@ build/charts.ts        the SVG chart writer and the benchmarks.json schema check
 build/dev.ts           dev server with rebuild on change
 build/check.ts         checks over dist/
 build/icons.ts         renders the PNG icons from logo.svg
-.github/workflows/     check.yml (build and check) and refresh.yml (weekly deploy hook)
+.github/workflows/     check.yml (build and check) and refresh.yml (weekly build and deploy)
 ```
 
 ## Licence

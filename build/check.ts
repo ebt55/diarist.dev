@@ -12,7 +12,8 @@
  *     site's own pages also for the comparatives and slogans it rules out.
  *  4. Weight: the landing page's HTML plus CSS (60 KB) and its total with images
  *     (600 KB); the models page's HTML plus CSS (120 KB).
- *  5. Hosting files: dist/_headers and dist/_redirects for Cloudflare Pages.
+ *  5. Hosting files: dist/_headers and dist/404.html for Cloudflare Workers static assets,
+ *     no _redirects line Workers would skip, and no leftover GitHub Pages files.
  *
  * Exits non-zero on any error.
  */
@@ -264,7 +265,8 @@ for (const d of config.docs as { slug: string }[]) {
 }
 if (!existsSync(path.join(DIST, "models", "index.html"))) errors.push("missing page: models/index.html");
 
-// Cloudflare Pages reads these two files from the output directory (DESIGN.md section 8).
+// Cloudflare Workers reads _headers from the assets directory and serves 404.html for paths
+// without a file (DESIGN.md section 8, wrangler.jsonc).
 const headersFile = path.join(DIST, "_headers");
 if (!existsSync(headersFile)) errors.push("missing dist/_headers");
 else {
@@ -276,9 +278,15 @@ else {
     if (line.length > 2000) errors.push(`dist/_headers:${i + 1}: over Cloudflare's 2000-character line limit`);
   });
 }
+if (!existsSync(path.join(DIST, "404.html"))) errors.push("missing dist/404.html");
+// Workers static assets honour _redirects but skip any line whose source names a host, so a
+// www redirect written there would silently do nothing (it is a Redirect Rule in the zone).
 const redirectsFile = path.join(DIST, "_redirects");
-if (!existsSync(redirectsFile)) errors.push("missing dist/_redirects");
-else if (!/^\S+ \S+ 30[1278]$/m.test(await readFile(redirectsFile, "utf8"))) errors.push("dist/_redirects has no `source destination code` line");
+if (existsSync(redirectsFile)) {
+  (await readFile(redirectsFile, "utf8")).split("\n").forEach((line, i) => {
+    if (/^\s*[a-z]+:\/\//i.test(line)) errors.push(`dist/_redirects:${i + 1}: Workers skips redirect sources with a host; use a Redirect Rule in the zone`);
+  });
+}
 for (const stale of ["CNAME", ".nojekyll"]) {
   if (existsSync(path.join(DIST, stale))) errors.push(`dist/${stale} belongs to GitHub Pages, which no longer hosts the site`);
 }
@@ -361,7 +369,8 @@ function checkInternal(from: string, url: string, line: number) {
       errors.push(`${where}: bad percent-encoding in "${url}"`);
     }
     if (decoded.startsWith("/")) {
-      warnings.push(`${where}: root-relative link "${url}" breaks under a project-page URL; prefer a relative link`);
+      // 404.html is served at any URL, so its links have to be root-relative.
+      if (rel(from) !== "404.html") warnings.push(`${where}: root-relative link "${url}" breaks under a project-page URL; prefer a relative link`);
       target = path.join(DIST, decoded);
     } else target = path.resolve(path.dirname(from), decoded);
   }
