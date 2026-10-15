@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head}}
+</head>
+<body>
+{{> header}}
+<main id="main">
+
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <h1 id="hero-title">Transcripts that know who said what.</h1>
+      <p class="lede">Diarist records your meetings, or imports a recording, separates up to eight speakers, and keeps everything in a searchable database on your own PC. No cloud, no account, no Python.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="{{download_url}}">Download for Windows{{prerelease_tag}}</a>
+        <a class="btn btn-secondary" href="{{repo_url}}">View on GitHub</a>
+      </div>
+      <p class="meta">{{version}}, {{installer_size}} installer. First run downloads the runtime and models, about 870 MB. Windows 10 and 11, NVIDIA GPU recommended. <a href="{{release_url}}">Release notes and checksum</a></p>
+      <p class="small">Linux is planned. macOS is not: nobody on the project owns a Mac.</p>
+      <p class="small">Using a coding agent? Point Claude Code, Codex or similar at the <a href="{{root}}docs/agent-setup/">agent setup guide</a> and it checks your PC, picks the models and sets everything up.</p>
+    </div>
+
+    <figure class="card" aria-label="Example transcript">
+      <ol class="transcript">
+        <li><time class="ts" datetime="PT4S">00:04</time> <span class="who"><span class="pill s1" aria-hidden="true"></span>Speaker 1</span> <span class="said">Let's start with last week's numbers.</span></li>
+        <li><time class="ts" datetime="PT9S">00:09</time> <span class="who"><span class="pill s2" aria-hidden="true"></span>Speaker 2</span> <span class="said">An hour of audio came back in under three minutes.</span></li>
+        <li><time class="ts" datetime="PT15S">00:15</time> <span class="who"><span class="pill me" aria-hidden="true"></span>me</span> <span class="said">And nothing left the machine.</span></li>
+        <li><time class="ts" datetime="PT18S">00:18</time> <span class="who"><span class="pill s3" aria-hidden="true"></span>Speaker 3</span> <span class="said">Then we ship the beta.</span></li>
+      </ol>
+      <span class="rec" aria-hidden="true"></span>
+    </figure>
+  </section>
+
+  <div class="wrap shot">
+{{screenshot}}
+  </div>
+
+  <section id="how" class="section wrap" aria-labelledby="how-title">
+    <h2 id="how-title">How it works</h2>
+    <div class="cols-2">
+      <div class="col">
+        <h3>Live</h3>
+        <p>Press Record. Your microphone is "me"; the sound your computer plays (Teams, Zoom, Meet, a browser) is split into the other speakers. Text appears in about a second. When you stop, the recording is processed once more with the full context, and the names you gave people during the meeting carry over.</p>
+        <ul class="facts">
+          <li>Ctrl+Alt+R starts a recording from any app.</li>
+          <li>GPU memory: budget 2 GB, measured on an RTX 3080.</li>
+          <li>Audio is kept as lossless FLAC, about 90 MB per hour, for 30 days by default. Transcripts are kept until you delete them.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>From a file</h3>
+        <p>Drop in m4a, mp3, wav, flac, ogg, mp4, mkv and more. On an RTX 3080 an hour of audio takes two to three minutes, about 27 times faster than real time.</p>
+        <ul class="facts">
+          <li>English by default; 40+ languages with Nemotron 3.5.</li>
+          <li>Peak GPU memory 2.6 GB with the English model, 1.82 GB with Nemotron 3.5, measured on a 77-minute file.</li>
+          <li>File jobs wait until a recording stops, so the two never run at the same time.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="across">Rename Speaker 2 to Alice once and the name sticks. Merge labels, recolour, move a line to the right person. Search every transcript at once. Export Markdown, text, JSON, SRT or VTT.</p>
+  </section>
+
+  <section id="speakers" class="section wrap" aria-labelledby="speakers-title">
+    <h2 id="speakers-title">Speakers are the point</h2>
+    <div class="cols-2 cols-wide-left">
+      <div class="col">
+        <p class="lead">Most local transcribers give you words. Diarist gives you who said them.</p>
+        <p>Speaker separation runs on NVIDIA's Nemotron 3 Diarization, the best system on the one independent benchmark that scores every diarizer the same way (DER 14.7 against 19 to 31 for the alternatives). Up to eight speakers per recording.</p>
+        <p>Measured on the author's own Zoom meetings, RTX 3080: 0.2 to 0.6 percent of words went to the wrong speaker; within a second of a speaker change, 7 to 9 percent.</p>
+        <p><a href="{{root}}docs/eval/">How we measure</a></p>
+      </div>
+      <div class="col">
+        <h3>Where it struggles</h3>
+        <ul class="plain">
+          <li>People talking over each other.</li>
+          <li>Far-field microphones and noisy rooms.</li>
+          <li>A ninth speaker, who is merged into an existing label.</li>
+          <li>Live labels, which are provisional until the pass after Stop.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="harness" class="section wrap" aria-labelledby="harness-title">
+    <h2 id="harness-title">A harness, not a wrapper</h2>
+    <p class="lead lead-wide">Most transcription apps are a wrapper around one model. Diarist is built the other way round. The app is a harness; the models are files you own.</p>
+    <div class="blocks">
+      <div class="block">
+        <h3>Plain folders.</h3>
+        <p>The runtime and every model are ordinary files under <code>models\</code> and <code>engine\</code> in your data folder. Drop a file in, press Refresh, use it.</p>
+      </div>
+      <div class="block">
+        <h3>Your PC, your choice.</h3>
+        <p>CUDA, Vulkan or CPU runtime; models by how much GPU memory you have. The setup screen proposes, you decide, and you can change it later.</p>
+      </div>
+      <div class="block">
+        <h3>No gates.</h3>
+        <p>Skip setup and start anyway. Add a model the app has never heard of, by URL or by file. Pin a runtime version. Roll back by moving a folder.</p>
+      </div>
+      <div class="block">
+        <h3>Nothing silent.</h3>
+        <p>Every download shows its address, hash, size and destination, with Retry and Copy link. When the app cannot do something, it says what is missing and offers the fix.</p>
+      </div>
+      <div class="block">
+        <h3>Measured swaps.</h3>
+        <p>Try a new model and compare it on your own recordings with the evaluation tools in the repository before you trust it.</p>
+      </div>
+      <p class="block aside">If you have used ComfyUI, this will feel familiar. If you have not, you do not need to.</p>
+    </div>
+  </section>
+
+  <section id="privacy" class="section wrap" aria-labelledby="privacy-title">
+    <h2 id="privacy-title">Nothing leaves your PC</h2>
+    <div class="cols-2 cols-wide-right">
+      <p class="lead">Audio, transcripts, names, settings and logs stay in one folder on your computer.</p>
+      <div class="col">
+        <p>The app connects to the internet only when you press a button that says so: installing the runtime (from GitHub), downloading a model (from Hugging Face), checking for a newer runtime, or checking for updates. It never checks anything on its own. There is no account, no analytics and no crash reporting.</p>
+        <p>This website is the same: no cookies, no analytics, no third-party requests.</p>
+        <p><a href="{{root}}docs/privacy/">Read the privacy page</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="models" class="section wrap" aria-labelledby="models-title">
+    <h2 id="models-title">What you need</h2>
+    <div class="cols-2 tables">
+      <div class="col">
+        <h3>Runtime package by GPU</h3>
+        <table>
+          <caption>The setup screen detects your GPU and preselects the package; you can change it.</caption>
+          <thead>
+            <tr><th scope="col">Your GPU</th><th scope="col">Package</th><th scope="col">Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">NVIDIA with a CUDA 13 driver (R580 or newer; 610.88 measured)</th><td>CUDA</td><td>Measured on an RTX 3080</td></tr>
+            <tr><th scope="row">AMD, Intel or older NVIDIA driver</th><td>Vulkan</td><td>Shipped by NVIDIA, untested by us</td></tr>
+            <tr><th scope="row">No usable GPU</th><td>CPU</td><td>Untested, much slower than real time</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col">
+        <h3>GPU memory</h3>
+        <table class="tiers">
+          <caption>Estimated tiers, not measured. The app reads free GPU memory before it starts.</caption>
+          <thead>
+            <tr><th scope="col">Card</th><th scope="col">What works</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">4 GB</th><td>File mode with Nemotron 3.5 and low-VRAM mode; live is borderline</td></tr>
+            <tr><th scope="row">6 GB</th><td>Live and file mode comfortably</td></tr>
+            <tr><th scope="row">8 GB and up</th><td>Everything</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="req"><strong>Other requirements:</strong> Windows 10 (1803 or newer) or Windows 11, 64-bit; about 1.6 GB of disk for the runtime and default models; recordings about 90 MB per hour; 8 GB of RAM is comfortable.</p>
+    <h3>Models</h3>
+    <ul class="plain models">
+      <li>Nemotron 3 Diarization (speakers, 102 MB)</li>
+      <li>Nemotron Speech Streaming EN 0.6B (English, default, 668 MB)</li>
+      <li>Nemotron 3.5 ASR Streaming (40+ languages, optional, 742 MB)</li>
+    </ul>
+    <p><a href="{{root}}docs/models/">Which model for which PC</a></p>
+  </section>
+
+  <section id="status" class="section wrap" aria-labelledby="status-title">
+    <h2 id="status-title">Measured, not promised</h2>
+    <p class="lead">0.1.0-beta.1 is the first public release.</p>
+    <div class="cols-2">
+      <div class="col">
+        <h3>Measured on the development machine (Windows 11, RTX 3080 10 GB)</h3>
+        <ul class="plain grid-list">
+          <li>File import</li>
+          <li>Live recording</li>
+          <li>The post-pass</li>
+          <li>Search</li>
+          <li>Export</li>
+          <li>The installer and updater</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Untested so far</h3>
+        <ul class="plain">
+          <li>The Vulkan and CPU runtime packages</li>
+          <li>Every machine that is not the author's</li>
+        </ul>
+      </div>
+    </div>
+    <p class="prose">Next: punctuation restoration, better handling of speaker changes, recording without headphones, and recognising the same person across meetings.</p>
+    <p><a href="{{roadmap_url}}">Roadmap</a> and <a href="{{root}}docs/changelog/">changelog</a></p>
+  </section>
+
+  <section id="open" class="section wrap" aria-labelledby="open-title">
+    <h2 id="open-title">Open source</h2>
+    <p class="prose">MIT licence. The runtime (Apache-2.0) and the models (OpenMDW-1.1, NVIDIA Open Model License) are downloaded at first run under their own licences. Issues and pull requests on GitHub.</p>
+    <div class="actions">
+      <a class="btn btn-secondary" href="{{repo_url}}">GitHub</a>
+      <a class="btn btn-secondary" href="{{issues_url}}">Report a problem</a>
+      <a class="btn btn-secondary" href="{{root}}docs/contributing/">Contributing</a>
+    </div>
+  </section>
+
+</main>
+{{> footer}}
+</body>
+</html>

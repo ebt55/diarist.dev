@@ -1,0 +1,35 @@
+{
+  "siteUrl": "https://diarist.dev",
+  "repo": "ebt55/diarist",
+  "repoUrl": "https://github.com/ebt55/diarist",
+  "issuesUrl": "https://github.com/ebt55/diarist/issues",
+  "roadmapUrl": "https://github.com/ebt55/diarist/blob/main/docs/plans/00-roadmap.md",
+  "manifestUrl": "https://raw.githubusercontent.com/ebt55/diarist/main/updater/latest.json",
+  "rawBase": "https://raw.githubusercontent.com/ebt55/diarist/main/",
+  "blobBase": "https://github.com/ebt55/diarist/blob/main/",
+  "editBase": "https://github.com/ebt55/diarist/edit/main/",
+  "localSource": "../meet-assist",
+  "screenshot": {
+    "light": "meeting-light",
+    "dark": "meeting-dark",
+    "widths": [828, 1652],
+    "sizes": "(min-width: 1128px) 1080px, calc(100vw - 48px)",
+    "alt": "The app with an imported 21-minute meeting open. On the left, the list of meetings and a search box. On the right, four speaker chips (Project manager, Speaker 1, Speaker 3, Speaker 4), transcript lines that each start with a timestamp and a coloured speaker label, and an audio player with a waveform."
+  },
+  "release": {
+    "version": "0.1.0-beta.1",
+    "installerName": "Diarist_0.1.0-beta.1_x64-setup.exe",
+    "installerSize": 6990991,
+    "downloadUrl": "https://github.com/ebt55/diarist/releases/download/v0.1.0-beta.1/Diarist_0.1.0-beta.1_x64-setup.exe"
+  },
+  "docs": [
+    { "slug": "install", "label": "Install", "source": "docs/INSTALL.md", "summary": "Installing, the first-run setup, firewalls, offline machines, updating and uninstalling." },
+    { "slug": "agent-setup", "label": "Set up with a coding agent", "source": "docs/SETUP-WITH-AN-AGENT.md", "summary": "A guide you hand to Claude Code, Codex or a similar agent: it checks your PC, picks the models and sets everything up." },
+    { "slug": "models", "label": "Models and hardware", "source": "docs/04-model-guide.md", "summary": "Which runtime package and which models for which PC, with the measurements behind each choice." },
+    { "slug": "privacy", "label": "Privacy", "source": "PRIVACY.md", "summary": "What stays on your computer, and every case in which the app uses the network." },
+    { "slug": "eval", "label": "How we measure", "source": "docs/05-eval-data.md", "summary": "The recordings and the pipeline behind the accuracy numbers." },
+    { "slug": "changelog", "label": "Changelog", "source": "CHANGELOG.md", "summary": "What changed in each release." },
+    { "slug": "contributing", "label": "Contributing", "source": "CONTRIBUTING.md", "summary": "The project's rules, building from source and pull requests." },
+    { "slug": "licences", "label": "Licences", "source": "LICENSES.md", "summary": "The licences of Diarist, the runtime, the models and the bundled libraries." }
+  ]
+}

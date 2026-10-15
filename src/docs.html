@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head}}
+</head>
+<body class="docs">
+{{> header}}
+<div class="wrap docs-layout">
+  <nav class="docs-nav" aria-label="Docs">
+    <p class="docs-nav-title"><a href="{{docs_root}}"{{docs_index_current}}>Docs</a></p>
+{{docs_nav}}
+  </nav>
+  <main id="main" class="doc">
+{{edit_link}}
+{{content}}
+  </main>
+</div>
+{{> footer}}
+</body>
+</html>
