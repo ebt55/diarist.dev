@@ -1,6 +1,6 @@
 # diarist.dev
 
-The website for [Diarist](https://github.com/ebt55/diarist), a meeting transcriber for
+Live at [diarist.dev](https://diarist.dev). The website for [Diarist](https://github.com/ebt55/diarist), a meeting transcriber for
 Windows that runs entirely on your own PC. One landing page, a `/models/` page with
 benchmark charts, and a `/docs` section rendered from the app repository's Markdown.
 Hand-written HTML and CSS, a small bun build script, no client-side framework, no
