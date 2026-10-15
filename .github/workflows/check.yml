@@ -1,0 +1,33 @@
+name: Check
+
+# Builds the site the way Cloudflare Pages does (docs fetched from GitHub) and runs
+# the checks, on every push and pull request. Deployment is Cloudflare's job: the
+# Pages project is connected to this repository and builds on each push to main.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.1
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+        env:
+          DOCS_SOURCE: remote
+
+      - name: Check
+        run: bun run check

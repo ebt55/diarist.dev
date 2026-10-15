@@ -1,0 +1,33 @@
+name: Weekly refresh
+
+# The docs, the benchmark data and the release version are fetched from the app
+# repository at build time, so a rebuild without a commit keeps them current. This
+# calls the Cloudflare Pages deploy hook once a week and on demand. The hook URL is
+# the repository secret CF_PAGES_DEPLOY_HOOK; without it the job only prints a notice.
+
+on:
+  schedule:
+    # Monday 05:17 UTC.
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the Cloudflare Pages deploy hook
+        env:
+          HOOK: ${{ secrets.CF_PAGES_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::notice::CF_PAGES_DEPLOY_HOOK is not set, so nothing was refreshed. Create a deploy hook in the Cloudflare Pages project (Settings, Builds and deployments, Deploy hooks) and add its URL as a repository secret with that name."
+            exit 0
+          fi
+          code=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --request POST "$HOOK")
+          echo "The deploy hook answered HTTP $code."
+          case "$code" in
+            2*) ;;
+            *) echo "::error::The deploy hook did not accept the request (HTTP $code)."; exit 1 ;;
+          esac

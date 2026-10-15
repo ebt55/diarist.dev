@@ -1,8 +1,10 @@
 # diarist.dev: design
 
-Status: v0.1, 15 Oct 2026. Author: Fable 5.1 (planner). Implementation: Opus 5.5 agent. Owner: Ebin.
+Status: v0.2, 15 Oct 2026. Author: Fable 5.1 (planner). Implementation: Opus 5.5 agents. Owner: Ebin.
 
-This file is the brief for the site and the record of why it looks the way it does. The product it describes lives at https://github.com/ebt55/diarist; its README, `docs/04-model-guide.md` and `PRIVACY.md` are the only sources of facts and numbers. Never invent a number; if a figure is not in those files, leave it out.
+v0.2 changes, after Ebin's review of v0.1: the tone is plainer (section 2), two pages are added (a models page with charts, section 5, and a known-issues page, section 6), and the navigation changes with them. Everything else from v0.1 stands.
+
+This file is the brief for the site and the record of why it looks the way it does. The product it describes lives at https://github.com/ebt55/diarist; its README, `docs/04-model-guide.md`, `docs/eval/`, `docs/KNOWN-ISSUES.md` and `PRIVACY.md` are the only sources of facts and numbers. Never invent a number; if a figure is not in those files, leave it out.
 
 ## 1. What the site is for
 
@@ -10,43 +12,49 @@ One page that makes three things clear in under a minute, then gets out of the w
 
 1. **What it does.** Meeting transcripts where every line says who spoke, recorded live or from a file, stored in a searchable database on your own PC.
 2. **What it refuses to do.** Nothing leaves the machine. No account, no cloud, no telemetry, no Python.
-3. **What kind of software it is.** Not a wrapper around one model: a harness that treats speech and speaker models as files you own, swap and measure.
+3. **What kind of software it is.** A harness for speech and speaker models: the models are files you own, swap and measure.
 
-Primary action: download the Windows beta. Secondary: open the GitHub repository. Tertiary: read the docs.
+Primary action: download the Windows beta. Secondary: open the GitHub repository. Tertiary: the models page, the docs and the known issues.
 
 The audience is a person who searched for local or offline meeting transcription with speaker labels, or who wants to run NVIDIA's Nemotron speech models on their own GPU without a Python stack. Assume they are technical enough to own a GPU and sceptical enough to check the privacy page. Write for that person.
 
-## 2. Voice
+## 2. Voice: state things, do not pitch them
 
-The README already has the voice: plain, direct, specific, no hype. Keep it.
+The README has the voice: plain, direct, specific. Keep it, and apply these rules, which v0.1 broke in places:
 
-- Short sentences. One idea each. "You" for the reader, "Diarist" or "the app" for the product.
-- Never: "AI-powered", "revolutionary", "seamless", "unlock", "supercharge", "effortless", exclamation marks, emoji.
-- Numbers only when measured, and say where they come from ("on an RTX 3080"). Caveats sit next to the claim, not in a footnote.
-- Say what is untested. The beta label is a feature of the honesty, not an apology.
+- **No pitch.** Say what the app does and how it is built. Never say what it does better, what others fail at, or what the reader will love. Delete any sentence whose job is persuasion rather than information.
+- **No comparatives about other tools.** "Most transcription apps are…", "Most local transcribers give you…" are out. The benchmark tables may list other systems by name with their numbers and sources, because that is information.
+- **Headings name the subject**, not a slogan: "Speaker separation", "Privacy", "Status". Not "Speakers are the point", "Measured, not promised", "A harness, not a wrapper".
+- **Philosophy is stated as a design decision**, in the first person plural or the passive: "The runtime and the models are files in folders you own. The app runs them together and stays out of the way." Not framed against anyone.
+- Short sentences. "You" for the reader, "Diarist" or "the app" for the product.
+- Never: "AI-powered", "revolutionary", "seamless", "unlock", "supercharge", "effortless", "the point", "promised", exclamation marks, emoji.
+- Numbers only when measured or published, with the source and date next to them. Caveats sit beside the claim.
+- Say what is untested. The beta label is information, not an apology.
 - Do not explain ComfyUI. One aside acknowledges it for people who know it; everyone else gets the idea from plain words.
 
-## 3. Page structure (single page, then /docs)
+## 3. Landing page structure
 
 ### Header
 
-Mark (`logo.svg`, 28 px) and the name "Diarist" set from `wordmark.svg` / `wordmark-dark.svg` by colour scheme, never retyped. Links: How it works, Speakers, Models, Privacy, Docs, GitHub. A compact "Download" button on the right. Sticky on desktop, plain on phones.
+Wordmark (`wordmark.svg` / `wordmark-dark.svg` by colour scheme, 28 px tall; it contains the mark, so do not add `logo.svg` beside it). Links: How it works, Speakers, Models (to `/models/`), Privacy, Issues (to `/docs/known-issues/`), Docs, GitHub. A compact "Download" button on the right. Sticky on desktop, plain on phones.
 
 ### Hero
 
 Headline (H1):
 
-> **Transcripts that know who said what.**
+> **Meeting transcripts with speaker labels, on your own PC.**
 
 Subhead:
 
-> Diarist records your meetings, or imports a recording, separates up to eight speakers, and keeps everything in a searchable database on your own PC. No cloud, no account, no Python.
+> Diarist records a meeting, or imports a recording, separates up to eight speakers, and stores the transcript in a searchable database on your computer. No cloud, no account, no Python.
 
-Primary button: **Download for Windows** with a small "beta" tag. Under it, one line in a muted colour: "0.1.0-beta.1, 6.7 MB installer. First run downloads the runtime and models, about 870 MB. Windows 10 and 11, NVIDIA GPU recommended." Secondary button: **View on GitHub**.
+Primary button: **Download for Windows** with a small "beta" tag. Under it, one muted line: "0.1.0-beta.1, 6.7 MB installer. First run downloads the runtime and models, about 870 MB. Windows 10 and 11, NVIDIA GPU recommended. Release notes and checksum." Secondary button: **View on GitHub**.
 
-Platform line under the buttons, small: "Linux is planned. macOS is not: nobody on the project owns a Mac."
+Platform line, small: "Linux is planned. macOS is not: nobody on the project owns a Mac."
 
-Visual, right of the copy on desktop and below it on phones: a **transcript card built in HTML**, not a screenshot, so it is crisp at every size and matches the mark exactly. A rounded ink-coloured tile (`#1b1f27`) with a turned corner, like the logo at large size, holding four lines of a transcript. Each line: a timestamp in a muted monospace, a speaker pill in that speaker's colour (bar or pill on the tile, never coloured text on white), the speaker name, the words. Use these exact lines; they are fictional and contain no real names:
+Agent line, small: "If you use a coding agent (Claude Code, Codex or similar), the agent setup guide lets it check your PC, pick the models and set everything up." with "agent setup guide" linking to `/docs/agent-setup/`.
+
+Visual, right of the copy on desktop and below it on phones: the **transcript card built in HTML** from v0.1, unchanged: ink tile, turned corner, four lines with timestamp, speaker pill and words:
 
 ```
 00:04  Speaker 1   Let's start with last week's numbers.
@@ -55,49 +63,43 @@ Visual, right of the copy on desktop and below it on phones: a **transcript card
 00:18  Speaker 3   Then we ship the beta.
 ```
 
-Speaker 1 blue `#4e79a7`, Speaker 2 orange `#f28e2b`, Speaker 3 red `#e15759`, "me" slate `#64748b`, the same order as the lines in the logo. A small red recording dot pulsing slowly in the card's corner is allowed (`#dc2626`, respect `prefers-reduced-motion`). Nothing else moves on the page.
+Speaker 1 blue `#4e79a7`, Speaker 2 orange `#f28e2b`, Speaker 3 red `#e15759`, "me" slate `#64748b`. Card label "Example transcript". The slow red recording dot stays (respect `prefers-reduced-motion`). Nothing else moves on the page.
 
-Below the hero, full width, one real screenshot in a thin frame: `docs/screenshots/meeting-light.png`, swapped for `meeting-dark.png` in dark mode. Check both images for personal names before shipping them; if any appear, use `library-light.png` / `library-dark.png` instead and report it.
+Below the hero, full width, one real screenshot in a thin frame: `docs/screenshots/meeting-light.png`, swapped for `meeting-dark.png` in dark mode, taken from the app repository's current files (they are being recaptured under the Diarist name; use whatever is in `../meet-assist/docs/screenshots` at build time and report if the app's corner still reads "meet-assist").
 
 ### How it works (id `how`)
 
-Two columns, "Live" and "From a file", each a short paragraph and three facts.
+Unchanged from v0.1: two columns, "Live" and "From a file", each a short paragraph and three facts, then the one line about renaming, merging, search and export.
 
-**Live.** Press Record. Your microphone is "me"; the sound your computer plays (Teams, Zoom, Meet, a browser) is split into the other speakers. Text appears in about a second. When you stop, the recording is processed once more with the full context, and the names you gave people during the meeting carry over.
+### Speaker separation (id `speakers`)
 
-**From a file.** Drop in m4a, mp3, wav, flac, ogg, mp4, mkv and more. On an RTX 3080 an hour of audio takes two to three minutes, about 27 times faster than real time.
+No lead sentence. Body:
 
-Then one line across both: "Rename Speaker 2 to Alice once and the name sticks. Merge labels, recolour, move a line to the right person. Search every transcript at once. Export Markdown, text, JSON, SRT or VTT."
+> Speaker separation runs on NVIDIA's Nemotron 3 Diarization. On VoiceArena Diarization-Bench v1, the one independent benchmark that scores every diarizer the same way, it has the lowest error rate of the systems listed: DER 14.7, against 19 to 31 for the others. Up to eight speakers per recording.
 
-### Speakers are the point (id `speakers`)
+> Measured on the author's own Zoom meetings on an RTX 3080: 0.2 to 0.6 percent of words went to the wrong speaker; within a second of a speaker change, 7 to 9 percent.
 
-Lead: "Most local transcribers give you words. Diarist gives you who said them."
+"Where it struggles", as a short list: people talking over each other; far-field microphones and noisy rooms; a ninth speaker, who is merged into an existing label; live labels, which are provisional until the pass after Stop.
 
-Body: Speaker separation runs on NVIDIA's Nemotron 3 Diarization, the best system on the one independent benchmark that scores every diarizer the same way (DER 14.7 against 19 to 31 for the alternatives). Up to eight speakers per recording.
+Links: "The numbers, with charts" to `/models/#diarization`; "How we measure" to `/docs/eval/`.
 
-Measured on the author's own Zoom meetings, RTX 3080: 0.2 to 0.6 percent of words went to the wrong speaker; within a second of a speaker change, 7 to 9 percent.
+### Models are files you own (id `harness`)
 
-Caveats, as a short list under the heading "Where it struggles": people talking over each other; far-field microphones and noisy rooms; a ninth speaker, who is merged into an existing label; live labels, which are provisional until the pass after Stop.
+Lead:
 
-Link: "How we measure" to `/docs/eval` (see section 5).
-
-### A harness, not a wrapper (id `harness`)
-
-This is the section that carries the philosophy. Give it room.
-
-Lead: "Most transcription apps are a wrapper around one model. Diarist is built the other way round. The app is a harness; the models are files you own."
+> Diarist is a harness for speech models, not an application built around one model. The runtime and the models are files in folders on your disk. The app's job is to run them together, tell you what it is doing, and stay out of the way.
 
 Five short blocks, each a bold phrase and two sentences:
 
 - **Plain folders.** The runtime and every model are ordinary files under `models\` and `engine\` in your data folder. Drop a file in, press Refresh, use it.
 - **Your PC, your choice.** CUDA, Vulkan or CPU runtime; models by how much GPU memory you have. The setup screen proposes, you decide, and you can change it later.
-- **No gates.** Skip setup and start anyway. Add a model the app has never heard of, by URL or by file. Pin a runtime version. Roll back by moving a folder.
+- **No gates.** Setup can be skipped. Models the app has never heard of can be added by URL or by file. A runtime version can be pinned, and rolled back by moving a folder.
 - **Nothing silent.** Every download shows its address, hash, size and destination, with Retry and Copy link. When the app cannot do something, it says what is missing and offers the fix.
-- **Measured swaps.** Try a new model and compare it on your own recordings with the evaluation tools in the repository before you trust it.
+- **Measured swaps.** A new model can be compared on your own recordings with the evaluation tools in the repository before you rely on it.
 
-Aside, small and muted, at the end: "If you have used ComfyUI, this will feel familiar. If you have not, you do not need to."
+Aside, small and muted: "If you have used ComfyUI, this will feel familiar. If you have not, you do not need to."
 
-### Nothing leaves your PC (id `privacy`)
+### Privacy (id `privacy`)
 
 Lead: "Audio, transcripts, names, settings and logs stay in one folder on your computer."
 
@@ -105,105 +107,117 @@ Body: "The app connects to the internet only when you press a button that says s
 
 One more line: "This website is the same: no cookies, no analytics, no third-party requests."
 
-Link: "Read the privacy page" to `/docs/privacy`.
+Link: "The privacy page" to `/docs/privacy/`.
 
-### What you need (id `models`)
+### Requirements (id `models`)
 
-Two small tables, taken from the README's "Choosing your package and models".
+The two small tables from v0.1 (runtime package by GPU; GPU memory tiers), the one-line other requirements, and the three model lines. Heading "Requirements". Link: "Charts and the numbers behind these choices" to `/models/`.
 
-Runtime package by GPU: NVIDIA with a CUDA 13 driver (R580 or newer; 610.88 measured) → CUDA, measured on an RTX 3080; AMD, Intel or older NVIDIA driver → Vulkan, shipped by NVIDIA, untested by us; no usable GPU → CPU, untested, much slower than real time.
-
-GPU memory tiers: 4 GB, file mode with Nemotron 3.5 and low-VRAM mode, live is borderline; 6 GB, live and file comfortably; 8 GB and up, everything.
-
-Other requirements as one line: Windows 10 (1803 or newer) or Windows 11, 64-bit; about 1.6 GB of disk for the runtime and default models; recordings about 90 MB per hour; 8 GB of RAM is comfortable.
-
-Models as one line each: Nemotron 3 Diarization (speakers, 102 MB); Nemotron Speech Streaming EN 0.6B (English, default, 668 MB); Nemotron 3.5 ASR Streaming (40+ languages, optional, 742 MB). Link: "Which model for which PC" to `/docs/models`.
-
-### Measured, not promised (id `status`)
+### Status (id `status`)
 
 Lead: "0.1.0-beta.1 is the first public release."
 
-Body, as two short lists. "Measured on the development machine (Windows 11, RTX 3080 10 GB): file import, live recording, the post-pass, search, export, the installer and updater." "Untested so far: the Vulkan and CPU runtime packages, and every machine that is not the author's."
+Two short lists. "Measured on the development machine (Windows 11, RTX 3080 10 GB): file import, live recording, the post-pass, search, export, the installer." (Not the updater: it is configured and signed but has not yet delivered an update.) "Untested so far: the Vulkan and CPU runtime packages, and every machine that is not the author's."
 
 "Next: punctuation restoration, better handling of speaker changes, recording without headphones, and recognising the same person across meetings."
 
-Link: "Roadmap and changelog" to `/docs/changelog` and the repository's `docs/plans/00-roadmap.md`.
+Links: "Roadmap" (repository `docs/plans/00-roadmap.md`), "changelog" (`/docs/changelog/`), "known issues" (`/docs/known-issues/`).
 
 ### Open source (id `open`)
 
-"MIT licence. The runtime (Apache-2.0) and the models (OpenMDW-1.1, NVIDIA Open Model License) are downloaded at first run under their own licences. Issues and pull requests on GitHub." Buttons: GitHub, Report a problem (issues URL), Contributing.
+As v0.1 (MIT, runtime and model licences, buttons GitHub, Report a problem, Contributing), plus one factual line after the licence sentence: "There is no paid tier, no licence key and no account. Speaker separation is part of the app." Stated, not sold: no comparison to anyone.
 
 ### Footer
 
-Mark, "A diarist keeps a record.", then links: Docs, Changelog, Privacy, Licences, GitHub. Last line, small: "Diarist is an independent open-source project and is not affiliated with NVIDIA."
+Mark, "A diarist keeps a record.", links Docs, Models, Issues, Changelog, Privacy, Licences, GitHub. Last line: "Diarist is an independent open-source project and is not affiliated with NVIDIA."
 
 ## 4. Visual direction
 
-- **Palette** from `branding/README.md`: ink `#1b1f27`, slate `#64748b`, blue `#4e79a7`, orange `#f28e2b`, red `#e15759`, recording `#dc2626`, paper `#f6f3ec`. Light page: paper or white background, ink text. Dark page: `#0f1115` background, `#f3f4f6` text. Define every colour as a token on `:root`, redefine for dark under `prefers-color-scheme: dark`, and give `body` an explicit background. The speaker colours appear only as pills or bars on the ink tile, or as thin accents, never as body text on a light background (orange fails contrast on white, see the brand README).
-- **Type**: system font stack (`system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif`) for everything except the wordmark, which is an SVG. No web fonts: the page must make zero third-party requests. Monospace for timestamps, paths and the hash: `ui-monospace, "Cascadia Mono", Consolas, monospace`.
-- **Layout**: one centred column, max width about 1080 px, generous vertical rhythm, 16 px side gutters on phones, no horizontal scroll at 360 px. Sections separated by space, not boxes. The transcript card is the one strong graphic; everything else is text, two tables and one screenshot.
-- **Motion**: the recording dot only. Respect `prefers-reduced-motion`.
-- **Weight budget**: HTML plus CSS under 60 KB; the screenshot delivered as WebP (and AVIF if easy) with width and height attributes and `loading="lazy"`; the whole landing page under 600 KB including images. No JavaScript is needed on the landing page except an optional few lines that keep the download link honest (see section 6); the page must work with JavaScript off.
-- **Icons**: none, or inline SVG only. The favicon is `logo.svg` plus a 32 px PNG fallback and an `apple-touch-icon` (the colour mark carries its own background).
-- **Accessibility**: landmarks, one H1, heading order, `alt` text on the screenshot that says what is on it, visible focus rings, contrast at least 4.5:1 for text in both schemes, the transcript card readable by a screen reader as a list.
+Unchanged from v0.1: brand palette as tokens on `:root` with a dark redefinition, system font stack, no web fonts, one centred column up to about 1080 px, 16 px gutters on phones, no motion but the recording dot, HTML plus CSS under 60 KB per page, zero third-party requests, landmarks and contrast at least 4.5:1 in both schemes. Charts (section 5) follow the same rules.
 
-## 5. /docs
+## 5. The models page: `/models/`
 
-Yes, the site has docs, but it writes none of its own. The repository's Markdown is the single source and GitHub stays canonical. The build renders these files into pages with the site's header, a left-hand list of pages, and an "Edit on GitHub" link at the top of each:
+A built page (not rendered from Markdown) titled **Choosing a runtime package and models**. Its purpose is to let someone pick by their minimum requirements and see the numbers behind the defaults. Every chart is an inline SVG generated by the build script from one data file, `docs/eval/benchmarks.json` in the app repository (fetched at build time like the docs; schema below). No JavaScript; the SVG text is real text.
 
-| Page | Source in ebt55/diarist |
-|---|---|
-| `/docs/` (index) | a short generated page listing the entries below |
-| `/docs/install` | `docs/INSTALL.md` |
-| `/docs/models` | `docs/04-model-guide.md` |
-| `/docs/privacy` | `PRIVACY.md` |
-| `/docs/eval` | `docs/05-eval-data.md` |
-| `/docs/changelog` | `CHANGELOG.md` |
-| `/docs/contributing` | `CONTRIBUTING.md` |
-| `/docs/licences` | `LICENSES.md` |
+Sections, in order:
 
-Rendering rules: GitHub-flavoured Markdown with tables; headings get ids for deep links; relative links that point at another rendered file are rewritten to the site page, every other relative link is rewritten to the file on GitHub (`https://github.com/ebt55/diarist/blob/main/<path>`); relative images are rewritten to `https://raw.githubusercontent.com/ebt55/diarist/main/<path>`; raw HTML in the Markdown is escaped, not rendered. The first H1 of each file becomes the page title. The docs CSS is the landing page's CSS plus a few rules for tables, code and the sidebar.
+1. **By your GPU** (id `pick`). One table, rows: no usable GPU; 4 GB; 6 GB; 8 GB and more. Columns: runtime package; speech model; diarizer; live recording; file transcription; note. Values from `docs/04-model-guide.md` section 4 and the README tiers. Under it, the CUDA driver rule (R580 or newer; 610.88 measured) and the compute-capability rule (sm_75 and up; below that, Vulkan), as one line each.
+2. **Speaker diarization, published** (id `diarization`). Horizontal bar chart of DER on VoiceArena Diarization-Bench v1 for the six systems in docs/04 section 2, lowest at the top; the row Diarist uses is marked "used by Diarist" in text and drawn with the full-strength bar, the others at 60 percent opacity. Beside or under the chart, the licence and "runs locally without a token" columns. Caption with source, date and the metric's definition (collar 0, overlap scored).
+3. **Speech to text, published** (id `asr`). Horizontal bar chart of Open ASR leaderboard average WER for the rows in docs/04 section 3, lowest at the top. Each row carries two flags in text: "word timestamps" and "runs in Diarist" (and "streaming"). The chart makes visible why the top two are not used: no timestamps, no runtime. Nemotron 3.5 has no leaderboard number and is listed without a bar, saying so.
+4. **Measured in Diarist** (id `measured`). Grouped bars of cpWER per evaluation session, EN model against Nemotron 3.5, from `docs/eval/*.md` with the session shorthand from `docs/05-eval-data.md`, plus AMI ES2002a. A second small chart or table: peak GPU memory per scenario (live idle, live with two sessions, file EN, file 3.5, Parakeet). A line each for speed (import at about 27 times real time; live first text in about 0.2 s). Each with "measured on an RTX 3080 10 GB, 15 Oct 2026".
+5. **Caveats** (id `caveats`): Parakeet's dropped span; eight speakers; punctuation; overlap and far-field; Vulkan and CPU untested. From docs/04 sections 3 and 7.
+6. **Sources**: the leaderboards and the repository files, with dates.
 
-Source of the Markdown at build time: in CI, fetch from `https://raw.githubusercontent.com/ebt55/diarist/main/...`; locally, prefer a sibling checkout at `../meet-assist` when it exists (the repository folder on the author's PC still carries the old name) and fall back to fetching. The build must fail loudly if a source is missing, never publish an empty page.
+Chart rules: horizontal bars only; value printed at the end of every bar; axis label with the metric and "lower is better"; bar colour the brand blue, text the page's ink, grid lines the muted colour; each `<svg>` has `<title>` and `<desc>`; every chart is followed by a `<details>` "Show as a table" containing the same numbers, so the data is readable without the graphic and by screen readers. Charts scale to the column width (`width: 100%`, `viewBox`), and remain legible at 360 px (shorten labels with a `data-short` variant if needed). Light and dark via CSS variables, since inline SVG inherits them.
 
-## 6. Build and hosting
+Data file schema (the agent creates `docs/eval/benchmarks.json` in the app repository from docs/04 and docs/eval, commits it by path, and the site fetches it):
 
-- **Repository**: `ebt55/diarist.dev` on GitHub, this folder (`C:\Users\ebin\claude-ground\diarist.dev`) is its working copy. The site is MIT like the app; the brand marks copied into it stay CC BY 4.0 (keep the attribution line from `branding/README.md`).
-- **Stack**: hand-written HTML and CSS plus a small build script run by bun (`bun run build` → `dist/`). The build does four things: copies static files, renders the docs pages from Markdown, injects the current version, installer name, size and download URL from `https://raw.githubusercontent.com/ebt55/diarist/main/updater/latest.json` (size from a HEAD request on the installer URL; fall back to the values committed in `site.config.json` if the network is unavailable, and print a warning), and converts the screenshot to WebP. Dependencies pinned to exact versions; use a well-known Markdown renderer (for example `markdown-it`) and nothing that pulls in a framework. No client-side framework.
-- **Dev loop**: `bun run dev` serves `dist/` with rebuild on change, on a fixed port (say 4321).
-- **Hosting**: GitHub Pages from this repository, deployed by a workflow (`actions/upload-pages-artifact` and `actions/deploy-pages`) on push to `main`, on `workflow_dispatch`, and on a weekly schedule so the docs and version stay fresh without a commit. `CNAME` file containing `diarist.dev`. Add a `.nojekyll`.
-- **Domain**: the owner adds DNS at the registrar. Apex `diarist.dev`: A records `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153` and AAAA records `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`. `www`: CNAME to `ebt55.github.io`. Then in the repository's Pages settings, custom domain `diarist.dev` and Enforce HTTPS once the certificate is issued. `.dev` is on the HSTS preload list, so the site only works over HTTPS; GitHub Pages provides the certificate.
-- **Honest download link**: the link points at the installer asset on the GitHub release, `https://github.com/ebt55/diarist/releases/download/v<version>/Diarist_<version>_x64-setup.exe`, injected at build time. Beside it, in small type, the SHA-256 is not shown (it changes per release and lives on the release page); instead a link "Release notes and checksum" goes to the release page.
-
-## 7. What the agent delivers
-
-```
-diarist.dev/
-  DESIGN.md              this file
-  README.md              what the site is, how to build and deploy, DNS records
-  LICENSE                MIT
-  package.json           bun scripts: build, dev, check
-  site.config.json       fallback version, installer name and size, repo URLs
-  src/
-    index.html           the landing page (template with {{version}} style slots)
-    docs.html            docs page template
-    styles.css
-    assets/              logo.svg, logo-mono.svg, wordmark.svg, wordmark-dark.svg,
-                         favicon.png, apple-touch-icon.png, screenshots (converted)
-  build/
-    build.ts             the build script
-  .github/workflows/pages.yml
-  CNAME, .nojekyll (copied into dist/)
+```json
+{
+  "updated": "2026-10-15",
+  "machine": "Windows 11, RTX 3080 10 GB, driver 610.88",
+  "diarization_published": {
+    "source": "VoiceArena Diarization-Bench v1, 139 English conversations, collar 0, overlap scored",
+    "url": "...", "metric": "DER, percent, lower is better",
+    "rows": [{"system": "Nemotron 3 Diarization", "value": 14.7, "licence": "OpenMDW-1.1", "local": true, "used": true}]
+  },
+  "asr_published": {
+    "source": "Open ASR leaderboard, October 2026", "url": "...", "metric": "average WER, percent, lower is better",
+    "rows": [{"model": "Nemotron Speech Streaming EN 0.6B", "value": 6.93, "timestamps": true, "runs": true, "streaming": true, "note": "at 1.1 s latency"}]
+  },
+  "asr_measured": {
+    "source": "docs/eval, 15 Oct 2026", "metric": "cpWER, percent, lower is better",
+    "sessions": [{"name": "...", "en": 5.1, "n35": 5.4}]
+  },
+  "vram_measured": {"rows": [{"scenario": "...", "gb": 1.05}]},
+  "speed_measured": {"import_realtime_factor": 27, "live_first_text_s": 0.2}
+}
 ```
 
-Acceptance:
+Every number in the file must be traceable to a line in docs/04 or docs/eval; put the file path in a `"from"` field per block.
 
-- `bun run build` produces `dist/` with `index.html`, `docs/*/index.html`, assets, `CNAME` and `.nojekyll`; it exits non-zero if any docs source is missing.
-- The landing page renders correctly at 360, 768 and 1280 px wide in light and dark mode, with no horizontal scroll and the transcript card legible at every width.
-- Zero requests to any host other than the page's own origin when viewing `dist/` (check the network panel). No cookies, no scripts from elsewhere.
-- Every number and claim on the page appears in the README or the model guide. Every link resolves (run a link check over `dist/`).
-- Screenshots used contain no personal names (look at them).
-- The three brand rules checked: wordmark never retyped, speaker colours never as text on light backgrounds, no gradients or shadows on the mark.
-- `git init`, first commit, no remote. The owner creates `ebt55/diarist.dev` and pushes, or asks the orchestrator to.
+## 6. Known issues: `/docs/known-issues/`
 
-Out of scope for the first version: blog, screenshots gallery, Linux or macOS download buttons, newsletter, analytics of any kind, i18n.
+Rendered from `docs/KNOWN-ISSUES.md` in the app repository, which the agent writes (it does not exist yet) from `docs/research/01-gguf-runtimes-windows.md`, `docs/research/08-runtime-cli-contract.md` (pitfalls), `docs/04-model-guide.md` section 7, the CHANGELOG's "Known limits" and `docs/05-eval-data.md`. One table per group, columns: **Issue**, **Affects**, **Status**, **What Diarist does meanwhile**, **Waiting on**. Groups: the runtime (NeMo-Speech.cpp), the models, Windows and the installer, Diarist itself. Seed list, each to be verified against the research docs and, for upstream issues, the GitHub issue (read-only):
+
+- Plain `transcribe --diarize` mislabels the first minutes of long files (NVIDIA/NeMo-Speech.cpp#67, filed by the author); Diarist uses the streaming path, unaffected.
+- WebSocket `commit` never returns a completion for utterances of a second or more (#49); Diarist does not depend on it.
+- Streaming wedges after sustained all-zero audio (#48); Diarist adds 1-LSB dither before the engine.
+- Word confidence is always 1.0 (#55); the UI cannot flag uncertain words yet.
+- No speaker-label revisions over WebSocket or the C ABI; live labels are provisional until the post-pass.
+- Parakeet TDT 0.6B v3 silently drops spans of speech on long files (model side); experimental, off by default.
+- Nemotron models punctuate little; punctuation restoration is on the roadmap.
+- At most eight speakers; a ninth is merged.
+- The `offline` full-attention diarization preset scores worse than streaming; not used.
+- Installer not code-signed (SmartScreen prompt); the NVIDIA runtime unsigned (Smart App Control may block it).
+- Vulkan and CPU runtime packages untested.
+- Recording without headphones: the far end leaks into the microphone channel; echo handling planned.
+- Windows path limit of 260 characters for deep model paths; handled with the extended-length prefix.
+
+Each row says plainly whether it is upstream, model-side, by design, or Diarist's own, and what version or event it waits on. The page is listed in the docs sidebar and index as "Known issues", and the header link "Issues" points at it.
+
+## 7. Docs pages
+
+As v0.1 section 5, plus `/docs/known-issues/` (source `docs/KNOWN-ISSUES.md`) and `/docs/agent-setup/` (source `docs/SETUP-WITH-AN-AGENT.md`, already on main). Sidebar order: Install, Set up with a coding agent, Models and hardware, Known issues, Privacy, How we measure, Changelog, Contributing, Licences.
+
+## 8. Build and hosting (changed in v0.2: Cloudflare Pages, not GitHub Pages)
+
+The build is as v0.1 section 6 (bun script, docs fetched from the app repository, version from `updater/latest.json`), with two additions: it fetches `docs/eval/benchmarks.json` the same way and fails loudly if it is missing or malformed, and the charts are generated in the build script (a small SVG writer, no charting library).
+
+Hosting is **Cloudflare Pages**, because the owner already hosts ebinbt.dev on Cloudflare and the domain is registered at Porkbun:
+
+- The source lives in the GitHub repository `ebt55/diarist.dev`. Cloudflare Pages is connected to that repository (Git integration) and builds on every push to `main`: build command `bun install --frozen-lockfile && bun run build`, output directory `dist`, environment variable `DOCS_SOURCE=remote`, and `BUN_VERSION=1.2.1` so the build image uses the pinned bun. Production branch `main`; preview deployments for other branches are fine.
+- Custom domain `diarist.dev` (and `www.diarist.dev` redirecting to it) added in the Pages project. If the zone is on Cloudflare (nameservers at Porkbun pointed at Cloudflare, as for ebinbt.dev), Pages creates the records itself; otherwise the owner adds a `CNAME diarist.dev → <project>.pages.dev` at Porkbun. `.dev` is HSTS-preloaded, so HTTPS only, which Cloudflare provides.
+- Weekly refresh so the docs and the version stay current without a commit: a Cloudflare Pages deploy hook, called from a scheduled GitHub Actions workflow (`refresh.yml`, cron weekly plus `workflow_dispatch`) with the hook URL in the repository secret `CF_PAGES_DEPLOY_HOOK`. The owner creates the hook in the Pages project and adds the secret.
+- GitHub Actions also runs `check.yml` on every push and pull request: `bun install --frozen-lockfile`, `DOCS_SOURCE=remote bun run build`, `bun run check`. No GitHub Pages workflow, no `CNAME` file, no `.nojekyll`.
+- `dist/_headers` sets the response headers Cloudflare Pages honours: `Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'none'; frame-ancestors 'none'` (matching the meta CSP), `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, and `Cache-Control: public, max-age=31536000, immutable` for `/assets/*` with hashed or versioned file names only (leave HTML uncached beyond Cloudflare's defaults). A `dist/_redirects` with `https://www.diarist.dev/* https://diarist.dev/:splat 301`.
+- README.md of the site repository documents exactly this: the Pages settings to enter, the environment variables, the custom domain step for both DNS cases, the deploy hook and secret, and that the output is plain static files that can be hosted anywhere else.
+
+## 9. Acceptance for v1.1
+
+- Every heading and lead on the landing page matches section 3; the forbidden words and the comparatives in section 2 are absent (extend `bun run check` with "Most ", "better than", "the point", "promised").
+- `/models/` renders four charts from `benchmarks.json`, each with a `<details>` table, legible at 360 px in both schemes, every number traceable to docs/04 or docs/eval.
+- `/docs/known-issues/` renders from `docs/KNOWN-ISSUES.md`; every upstream row links to its issue; no row is speculation.
+- The screenshot in the hero is the current file from the app repository; the report says whether it still shows the old name.
+- `bun run build` and `bun run check` pass; zero third-party requests; landing page still under 60 KB of HTML plus CSS; the models page under 120 KB without images.
+- Commits in the site repository with the Opus trailer; in the app repository only `docs/eval/benchmarks.json` and `docs/KNOWN-ISSUES.md`, staged by path, pushed to main.
