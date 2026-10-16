@@ -123,6 +123,8 @@ Two short lists. "Measured on the development machine (Windows 11, RTX 3080 10 G
 
 Links: "Roadmap" (repository `docs/plans/00-roadmap.md`), "changelog" (`/docs/changelog/`), "known issues" (`/docs/known-issues/`).
 
+**16 Oct 2026: 0.1.0-beta.2.** The lead names the current release and that beta.1 copies reach it through Check for updates. Between the lead and the two lists, a "What's new in beta.2" list (`.whatsnew`): six items, each a bold phrase and one or two sentences in the site's words, only things the changelog states and, where there is a number, docs/04 or docs/eval back; then links to the changelog page's section and the release notes. The updater joins the measured list after its first delivered update; the untested list names what the Vulkan and CPU packages were run on. The hero's copy did not change: the version and size come from the manifest. Copy that no new fact touched was left as written.
+
 ### Open source (id `open`)
 
 As v0.1 (MIT, runtime and model licences, buttons GitHub, Report a problem, Contributing), plus one factual line after the licence sentence: "There is no paid tier, no licence key and no account. Speaker separation is part of the app." Stated, not sold: no comparison to anyone.
@@ -177,6 +179,8 @@ Data file schema (the agent creates `docs/eval/benchmarks.json` in the app repos
 ```
 
 Every number in the file must be traceable to a line in docs/04 or docs/eval; put the file path in a `"from"` field per block.
+
+**16 Oct 2026: a fifth chart, Languages measured (id `languages`),** between Measured in Diarist and Caveats, from the `languages_measured` block (Nemotron 3.5 on about 10 minutes of FLEURS per language, at the file setting, without diarization): one row per language, two bars (language given, automatic detection) with a 2 px mark in the text colour, on a background-colour halo, at the model card's number for the same mode; a third legend entry for the mark (the legend wraps to a second line when it would pass 328 px); "CER" flagged on Japanese; the model card's two numbers as the row's meta line; the data file's note in the caption. Caption: "Measured on FLEURS slices in our runtime, 16 Oct 2026". The Sources section ends with a list generated from each block's `from` field, so file names cannot go stale; the hand-written items name only the leaderboards, the model card, the model guide and docs/eval. Caveats gained the EN model's dropped quiet speech and the short-speaker merge; the Vulkan and CPU rows say what they were measured on (an RTX 3080 and a Ryzen 9 5900X, nothing about AMD or Intel). Numbers that changed with beta.2 (import speed 30 times, cpWER, words near a speaker change) were refreshed on both pages.
 
 ## 6. Known issues: `/docs/known-issues/`
 

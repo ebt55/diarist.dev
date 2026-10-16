@@ -49,9 +49,9 @@
       </div>
       <div class="col">
         <h3>From a file</h3>
-        <p>Drop in m4a, mp3, wav, flac, ogg, mp4, mkv and more. On an RTX 3080 an hour of audio takes two to three minutes, about 27 times faster than real time.</p>
+        <p>Drop in m4a, mp3, wav, flac, ogg, mp4, mkv and more. On an RTX 3080 an hour of audio takes about two minutes, about 30 times faster than real time over the whole import.</p>
         <ul class="facts">
-          <li>English by default; 40+ languages with Nemotron 3.5.</li>
+          <li>English by default; 40+ languages with Nemotron 3.5, 30 of them offered in the app's language lists.</li>
           <li>Peak GPU memory 2.6 GB with the English model, 1.82 GB with Nemotron 3.5, measured on a 77-minute file.</li>
           <li>File jobs wait until a recording stops, so the two never run at the same time.</li>
         </ul>
@@ -65,7 +65,7 @@
     <div class="cols-2 cols-wide-left">
       <div class="col">
         <p>Speaker separation runs on NVIDIA's Nemotron 3 Diarization. On VoiceArena Diarization-Bench v1, the one independent benchmark that scores every diarizer the same way, it has the lowest error rate of the systems listed: DER 14.7, against 19 to 31 for the others. Up to eight speakers per recording.</p>
-        <p>Measured on the author's own Zoom meetings on an RTX 3080: 0.2 to 0.6 percent of words went to the wrong speaker; within a second of a speaker change, 7 to 9 percent.</p>
+        <p>Measured on the author's own Zoom meetings on an RTX 3080: 0.2 to 0.3 percent of words went to the wrong speaker; within a second of a speaker change, 5.5 to 7.8 percent with Nemotron 3.5 and 5.6 to 12.7 with the EN model.</p>
         <p class="links"><a href="{{root}}models/#diarization">The numbers, with charts</a> <a href="{{root}}docs/eval/">How we measure</a></p>
       </div>
       <div class="col">
@@ -113,7 +113,7 @@
     <div class="cols-2 cols-wide-right">
       <p class="lead">Audio, transcripts, names, settings and logs stay in one folder on your computer.</p>
       <div class="col">
-        <p>The app connects to the internet only when you press a button that says so: installing the runtime (from GitHub), downloading a model (from Hugging Face), checking for a newer runtime, or checking for updates. It never checks anything on its own. There is no account, no analytics and no crash reporting.</p>
+        <p>The app connects to the internet only when you press a button that says so: installing the runtime (from GitHub), downloading a model (from Hugging Face), checking for a newer runtime, or checking for updates. It never checks anything on its own. There is no account, no analytics and no crash reporting. A crash leaves a report in the data folder's logs; it is never sent.</p>
         <p>This website is the same: no cookies, no analytics, no third-party requests.</p>
         <p><a href="{{root}}docs/privacy/">The privacy page</a></p>
       </div>
@@ -132,8 +132,8 @@
           </thead>
           <tbody>
             <tr><th scope="row">NVIDIA with a CUDA 13 driver (R580 or newer; 610.88 measured)</th><td>CUDA</td><td>Measured on an RTX 3080</td></tr>
-            <tr><th scope="row">AMD, Intel or older NVIDIA driver</th><td>Vulkan</td><td>Shipped by NVIDIA, untested by us</td></tr>
-            <tr><th scope="row">No usable GPU</th><td>CPU</td><td>Untested, much slower than real time</td></tr>
+            <tr><th scope="row">AMD, Intel or older NVIDIA driver</th><td>Vulkan</td><td>Measured on an NVIDIA card only; AMD and Intel untested</td></tr>
+            <tr><th scope="row">No usable GPU</th><td>CPU</td><td>Measured on a Ryzen 9 5900X: about 5 times real time</td></tr>
           </tbody>
         </table>
       </div>
@@ -164,7 +164,17 @@
 
   <section id="status" class="section wrap" aria-labelledby="status-title">
     <h2 id="status-title">Status</h2>
-    <p class="lead">0.1.0-beta.1 is the first public release.</p>
+    <p class="lead">0.1.0-beta.2, released 16 Oct 2026, is the second beta. Installed copies of beta.1 reach it through Check for updates.</p>
+    <h3>What's new in beta.2</h3>
+    <ul class="plain whatsnew">
+      <li><strong>Imports and the pass after Stop are more accurate.</strong> They run the speech model at its full lookahead and the speaker model with its offline geometry. On the hand-labelled AMI meeting the word error rate went from 19.8 to 18.0 percent with the EN model and from 23.0 to 20.7 with Nemotron 3.5, every Zoom meeting in the evaluation set improved, and the speech pass runs about 2.6 times faster. Live recording keeps its low-latency settings.</li>
+      <li><strong>Languages follow the model.</strong> The language lists show what the installed speech models cover, 30 languages with Nemotron 3.5. A recording or import in a language the selected model does not cover runs on an installed model that does, or offers the Nemotron 3.5 download first. Imports ask for the language, and Japanese and Chinese are now passed to the model instead of running as automatic detection.</li>
+      <li><strong>Crash reports stay on your PC.</strong> A crash leaves a report in the data folder's logs; the next launch says so and offers Copy report for a bug report. Nothing is sent anywhere.</li>
+      <li><strong>The Vulkan and CPU runtime packages run.</strong> Beta.1 always asked for the CUDA device, so they could not transcribe or record. Measured on the development PC only: Vulkan on an RTX 3080 at 25 to 28 times real time, CPU on a Ryzen 9 5900X at about 5 times.</li>
+      <li><strong>Playback at a usable level.</strong> A quiet meeting is raised so its loud speech peaks near full scale, with a volume slider and an Auto level button that plays the audio as stored. The stored audio does not change.</li>
+      <li><strong>A new app icon</strong> in a light and a dark variant; the taskbar button follows the taskbar theme.</li>
+    </ul>
+    <p><a href="{{root}}docs/changelog/#010-beta2---2026-10-16">The full changelog</a> and the <a href="{{release_url}}">release notes</a></p>
     <div class="cols-2">
       <div class="col">
         <h3>Measured on the development machine (Windows 11, RTX 3080 10 GB)</h3>
@@ -175,12 +185,13 @@
           <li>Search</li>
           <li>Export</li>
           <li>The installer</li>
+          <li>The updater, once (beta.1 to beta.2)</li>
         </ul>
       </div>
       <div class="col">
         <h3>Untested so far</h3>
         <ul class="plain">
-          <li>The Vulkan and CPU runtime packages</li>
+          <li>The Vulkan and CPU runtime packages beyond the development PC (an RTX 3080 and a Ryzen 9 5900X)</li>
           <li>Every machine that is not the author's</li>
         </ul>
       </div>

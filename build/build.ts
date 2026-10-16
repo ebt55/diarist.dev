@@ -9,7 +9,7 @@
  *  4. Reads the hero screenshots from the app repository and converts them to AVIF
  *     and WebP with sharp.
  *  5. Reads docs/eval/benchmarks.json from the app repository and builds /models/
- *     with four inline SVG charts (build/charts.ts).
+ *     with five inline SVG charts (build/charts.ts).
  *
  * Exits non-zero when a source is missing, empty or malformed: never publish an
  * empty page or a chart without its data.
@@ -24,7 +24,7 @@ import { existsSync } from "node:fs";
 import { copyFile, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import MarkdownIt from "markdown-it";
-import { asrChart, diarizationChart, measuredChart, parseBenchmarks, vramChart, type ChartSummary } from "./charts.ts";
+import { asrChart, diarizationChart, languagesChart, measuredChart, parseBenchmarks, vramChart, type ChartSummary } from "./charts.ts";
 
 export const ROOT = path.resolve(import.meta.dir, "..");
 export const SRC = path.join(ROOT, "src");
@@ -604,8 +604,20 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
     try {
       const b = parseBenchmarks(benchSrc.text);
       const blob = config.blobBase;
-      const made = [diarizationChart(b, blob), asrChart(b, blob), measuredChart(b, blob), vramChart(b, blob)];
+      const updatedLong = longDate(b.updated);
+      const made = [diarizationChart(b, blob), asrChart(b, blob), measuredChart(b, blob), vramChart(b, blob), languagesChart(b, blob, updatedLong)];
       charts.push(...made.map((m) => m.summary));
+      // The Sources section lists where each block of the data file takes its numbers from,
+      // straight from the file's `from` fields, so it cannot drift from the data.
+      const blocks: [string, string][] = [
+        ["Speaker diarization, published", b.diarization_published.from],
+        ["Speech to text, published", b.asr_published.from],
+        ["Measured in Diarist (cpWER)", b.asr_measured.from],
+        ["Peak GPU memory", b.vram_measured.from],
+        ["Speed", b.speed_measured.from],
+        ["Languages, measured", b.languages_measured.from],
+      ];
+      const sourcesFrom = blocks.map(([name, from]) => `      <li><strong>${escapeHtml(name)}:</strong> ${escapeHtml(from)}</li>`).join("\n");
       const modelsTemplate = await loadTemplate("models.html");
       const modelsHtml = fill(
         modelsTemplate,
@@ -623,9 +635,11 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
           chart_asr: made[1].html,
           chart_measured: made[2].html,
           chart_vram: made[3].html,
+          chart_languages: made[4].html,
+          sources_from: sourcesFrom,
           machine: escapeHtml(b.machine),
           updated: escapeHtml(b.updated),
-          updated_long: escapeHtml(longDate(b.updated)),
+          updated_long: escapeHtml(updatedLong),
           import_factor: String(b.speed_measured.import_realtime_factor),
           live_first_text: String(b.speed_measured.live_first_text_s),
           benchmarks_url: `${config.blobBase}${encodeRepoPath(config.benchmarks)}`,

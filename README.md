@@ -34,9 +34,11 @@ What `bun run build` does:
 3. Renders `dist/docs/<page>/index.html` from the Markdown files listed under `docs` in
    `site.config.json`.
 4. Builds `dist/models/index.html` from `src/models.html` and `docs/eval/benchmarks.json`:
-   four horizontal bar charts as inline SVG (`build/charts.ts`, no charting library), each
+   five horizontal bar charts as inline SVG (`build/charts.ts`, no charting library), each
    followed by a `<details>` table with the same numbers. The data file names, per block,
-   the file in the app repository its numbers come from.
+   the file in the app repository its numbers come from. The fifth chart, word error rate
+   per language on FLEURS slices, has a mark on each bar at the model card's number. The
+   Sources section ends with a list generated from each block's `from` field.
 5. Reads the current release from
    `https://raw.githubusercontent.com/ebt55/diarist/main/updater/latest.json`, and the
    installer size from a HEAD request on the installer URL. Without a network it falls back

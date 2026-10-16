@@ -530,6 +530,12 @@ tbody th { font-weight: 400; }
 .req { max-width: 48em; }
 .models { max-width: 40em; }
 
+/* What's new: one list, each item a bold phrase and a sentence or two */
+
+.whatsnew { max-width: 48em; }
+.whatsnew li { padding-block: 0.5em; }
+.whatsnew li + li { margin-top: 0; padding-top: 0.6em; }
+
 /* Footer */
 
 .site-footer {
@@ -724,6 +730,8 @@ tbody th { font-weight: 400; }
 .chart .c-bar.s0 { fill: var(--speaker-1); }
 .chart .c-bar.s1 { fill: var(--speaker-2); }
 .chart .c-bar.faded { opacity: 0.6; }
+.chart .c-mark-halo { stroke: var(--bg); stroke-width: 6; }
+.chart .c-mark { stroke: var(--text); stroke-width: 2; }
 .chart .c-short { display: none; }
 @media (max-width: 479px) {
   .chart .c-long { display: none; }
