@@ -2,7 +2,8 @@
 
 Live at [diarist.dev](https://diarist.dev). The website for [Diarist](https://github.com/ebt55/diarist), a meeting transcriber for
 Windows that runs entirely on your own PC. One landing page, a `/models/` page with
-benchmark charts, and a `/docs` section rendered from the app repository's Markdown.
+benchmark charts, a `/code-signing/` policy page, and a `/docs` section rendered from the
+app repository's Markdown.
 Hand-written HTML and CSS, a small bun build script, no client-side framework, no
 JavaScript on the pages, no web fonts, no analytics, and no requests to any other host.
 
@@ -154,6 +155,7 @@ wrangler.jsonc         Cloudflare Workers configuration: static assets from dist
 src/index.html         landing page template ({{name}} slots, {{> partial}} includes)
 src/models.html        models page template; the charts are filled in by the build
 src/docs.html          docs page template
+src/code-signing.html  the code signing policy page SignPath Foundation's terms require
 src/404.html           the not-found page
 src/partials/          head, header, footer
 src/styles.css         the one stylesheet

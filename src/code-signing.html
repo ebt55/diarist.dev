@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{> head}}
+</head>
+<body>
+{{> header}}
+<main id="main" class="wrap page">
+  <h1>Code signing policy</h1>
+  <p class="page-lede">Free code signing provided by <a href="https://about.signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a>.</p>
+  <p class="small">Status, 16 Oct 2026: signing through SignPath Foundation is being set up, and no release is signed yet. Releases up to and including 0.1.0-beta.2 are not code-signed; check those by their SHA-256 in the release notes. This page changes when the first signed release is published.</p>
+
+  <section id="signed" aria-labelledby="signed-title">
+    <h2 id="signed-title">What is signed</h2>
+    <ul class="plain">
+      <li>From the first signed release on, the installer (<code>Diarist_&lt;version&gt;_x64-setup.exe</code>) and the app inside it (<code>diarist.exe</code>) carry an Authenticode signature with a certificate issued to SignPath Foundation. Windows shows SignPath Foundation as the publisher, not Diarist or its author.</li>
+      <li>Not signed: <code>uninstall.exe</code>, which the installer writes during installation, and the NSIS helper libraries the installer unpacks while it runs.</li>
+      <li>Never signed by this project: the speech runtime (NeMo-Speech.cpp, published by NVIDIA) and the models, which the app downloads when you ask for them. SignPath Foundation's terms do not allow a project to sign other projects' files. The app checks each download against its published SHA-256.</li>
+      <li>Updates carry a second, separate signature: the updater checks every downloaded installer against the project's own updater key before it runs it.</li>
+    </ul>
+  </section>
+
+  <section id="builds" aria-labelledby="builds-title">
+    <h2 id="builds-title">How signed builds are made</h2>
+    <ul class="plain">
+      <li>Only the repository's <a href="{{blob_base}}.github/workflows/sign-release.yml">sign-release workflow</a> submits files for signing. It builds on GitHub-hosted runners from a commit on the <code>main</code> branch of <a href="{{repo_url}}">github.com/ebt55/diarist</a>; the release tag is created on that commit when the release is published.</li>
+      <li>For every signing request, SignPath checks that the files come from that workflow run, that repository and that branch, so a signed file is a build of the public source. The source includes the build scripts and the workflow files, and they are reviewed like any other change.</li>
+      <li>Nothing is signed until the approver has approved the signing request in SignPath, by hand, for each release.</li>
+      <li>The signing key is held by SignPath in a hardware security module. The project never has a copy.</li>
+    </ul>
+  </section>
+
+  <section id="team" aria-labelledby="team-title">
+    <h2 id="team-title">Team roles</h2>
+    <p>Diarist is a one-person project. Ebin (<a href="https://github.com/ebt55">ebt55 on GitHub</a>) holds every role. No one else has write access to the repository or a role in SignPath.</p>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Team roles">
+    <table>
+      <thead>
+        <tr><th scope="col">Role</th><th scope="col">What it covers</th><th scope="col">Member</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">Author</th><td>Changes the source code without a further review</td><td>Ebin</td></tr>
+        <tr><th scope="row">Reviewer</th><td>Reviews every change proposed by someone else, such as a pull request, before it is merged</td><td>Ebin</td></tr>
+        <tr><th scope="row">Approver</th><td>Decides whether a release is signed, and approves each signing request</td><td>Ebin</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>With one person in every role, these controls take the place of a second person:</p>
+    <ul class="plain">
+      <li>Multi-factor authentication on the GitHub account and on the SignPath account.</li>
+      <li>Signed builds come only from the sign-release workflow on GitHub-hosted runners, from <code>main</code>; a build made on any other machine, including the author's, is never signed.</li>
+      <li>The <code>main</code> branch and the release tags cannot be force-pushed or deleted.</li>
+      <li>SignPath verifies the origin of every signing request, and every request is approved by hand.</li>
+    </ul>
+  </section>
+
+  <section id="privacy" aria-labelledby="privacy-title">
+    <h2 id="privacy-title">Privacy</h2>
+    <p>This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.</p>
+    <p>Diarist has no account, no analytics, no crash reporting and no telemetry. It connects to the internet only when you press a button that says so:</p>
+    <ul class="plain">
+      <li>Install engine, or a runtime: <code>github.com</code> and GitHub's download servers.</li>
+      <li>Install or Download a model: <code>huggingface.co</code> and its download servers, through Windows' <code>curl.exe</code>.</li>
+      <li>Add from URL: the address you typed.</li>
+      <li>Check for newer runtime: <code>api.github.com</code>.</li>
+      <li>Check for updates: GitHub (the update manifest on <code>raw.githubusercontent.com</code>, then the installer from <code>github.com</code> if you install it).</li>
+    </ul>
+    <p>Like any download, these requests show your IP address to the server; nothing about your meetings, your computer or your use of the app is sent. If WebView2 is missing, the installer downloads it from Microsoft. The services involved have their own privacy policies: <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub</a>, <a href="https://huggingface.co/privacy">Hugging Face</a> and <a href="https://www.microsoft.com/en-us/privacy/privacystatement">Microsoft</a>. The full statement is <a href="{{root}}docs/privacy/">the privacy page</a>.</p>
+  </section>
+
+  <section id="verify" aria-labelledby="verify-title">
+    <h2 id="verify-title">Checking a download</h2>
+    <ul class="plain">
+      <li>Download the installer from the <a href="{{repo_url}}/releases">releases page</a>, or with this site's Download button, which links to the same file.</li>
+      <li>Compare its SHA-256 with the one in the release notes. In PowerShell: <code>Get-FileHash -Algorithm SHA256 .\Diarist_&lt;version&gt;_x64-setup.exe</code>.</li>
+      <li>For a signed release: right-click the file, Properties, Digital Signatures. The signer is SignPath Foundation, and Details says the signature is OK. In PowerShell, <code>Get-AuthenticodeSignature .\Diarist_&lt;version&gt;_x64-setup.exe</code> shows the status <code>Valid</code> and a signer starting with <code>CN=SignPath Foundation</code>. The installed <code>diarist.exe</code> (in <code>%LOCALAPPDATA%\Diarist</code> unless you chose another folder) shows the same.</li>
+      <li>SmartScreen can still show "Windows protected your PC" for a new release until enough people have downloaded it. That message means Windows does not know the file's reputation yet; it does not mean malware was found. For a signed release, More info shows SignPath Foundation as the publisher. If it shows "Unknown publisher" for a release this page lists as signed, do not run the file.</li>
+      <li>SignPath Foundation signs many open-source projects, so the publisher name alone does not show that a file is Diarist. The SHA-256 in the release notes does.</li>
+    </ul>
+  </section>
+
+  <section id="report" aria-labelledby="report-title">
+    <h2 id="report-title">If a file looks wrong</h2>
+    <p>If you find a file that is signed by SignPath Foundation and claims to be Diarist, but its SHA-256 is in no release's notes, or a signed Diarist file that does something the docs do not describe: do not run it. <a href="{{issues_url}}">Open an issue</a> with the file's SHA-256 and where you got it; if you would rather not post it publicly, send a <a href="{{repo_url}}/security/advisories/new">private report</a> from the repository's Security tab. You can also report it to SignPath Foundation at <a href="mailto:support@signpath.io">support@signpath.io</a>; their <a href="https://signpath.org/terms">terms</a> describe how they investigate, including revoking the certificate.</p>
+  </section>
+
+  <section id="links" aria-labelledby="links-title">
+    <h2 id="links-title">Links</h2>
+    <ul class="plain">
+      <li>Source code: <a href="{{repo_url}}">github.com/ebt55/diarist</a></li>
+      <li>Releases, with each installer's SHA-256: <a href="{{repo_url}}/releases">github.com/ebt55/diarist/releases</a></li>
+      <li>SignPath Foundation's conditions for open-source projects: <a href="https://signpath.org/terms">signpath.org/terms</a></li>
+    </ul>
+  </section>
+</main>
+{{> footer}}
+</body>
+</html>

@@ -575,6 +575,27 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
   await writeFile(path.join(DIST, "404.html"), notFoundHtml);
   pages.push("404.html");
 
+  // ------------------------------------------------ code signing policy
+  // SignPath Foundation's terms ask for a page titled "Code signing policy", linked from
+  // the home and download pages: the footer and the hero's download line link here.
+  const codeSigningHtml = fill(
+    await loadTemplate("code-signing.html"),
+    {
+      ...common,
+      root: "../",
+      title: "Code signing policy - Diarist",
+      description: escapeHtml(
+        "How Diarist's Windows installer is signed through SignPath Foundation, who approves each release, what the app sends over the network, and how to check a download.",
+      ),
+      canonical: `${config.siteUrl}/code-signing/`,
+      csp: csp([]),
+    },
+    "src/code-signing.html",
+  );
+  await mkdir(path.join(DIST, "code-signing"), { recursive: true });
+  await writeFile(path.join(DIST, "code-signing", "index.html"), codeSigningHtml);
+  pages.push("code-signing/index.html");
+
   // ------------------------------------------------ models page
   const benchSrc = await readSource(config.benchmarks, mode, config);
   if ("error" in benchSrc) {

@@ -129,7 +129,9 @@ As v0.1 (MIT, runtime and model licences, buttons GitHub, Report a problem, Cont
 
 ### Footer
 
-Mark, "A diarist keeps a record.", links Docs, Models, Issues, Changelog, Privacy, Licences, GitHub. Last line: "Diarist is an independent open-source project and is not affiliated with NVIDIA."
+Mark, "A diarist keeps a record.", links Docs, Models, Issues, Changelog, Privacy, Licences, Code signing policy, GitHub. Last line: "Diarist is an independent open-source project and is not affiliated with NVIDIA."
+
+**16 Oct 2026: `/code-signing/`.** A built page (`src/code-signing.html`, like `/models/`) titled **Code signing policy**, which SignPath Foundation's terms (signpath.org/terms) require before they sign the installer: their sentence "Free code signing provided by SignPath.io, certificate by SignPath Foundation", what is signed, how signed builds are made, the team roles, the privacy statement, how to check a download and how to report a bad file. The terms ask for the term "Code signing policy" on the home and download pages, so the footer (every page) and the hero's download line link to it; do not remove either link while releases are signed. The page's status line changes when the first signed release ships. The plan behind it is `docs/plans/14-code-signing-signpath.md` in the app repository.
 
 ## 4. Visual direction
 
