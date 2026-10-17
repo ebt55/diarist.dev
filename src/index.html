@@ -164,8 +164,8 @@
 
   <section id="status" class="section wrap" aria-labelledby="status-title">
     <h2 id="status-title">Status</h2>
-    <p class="lead">0.1.0-beta.2, released 16 Oct 2026, is the second beta. Installed copies of beta.1 reach it through Check for updates.</p>
-    <h3>What's new in beta.2</h3>
+    <p class="lead">0.1.0-beta.3, released 17 Oct 2026, is the current beta. Installed copies update to it through Check for updates.</p>
+    <h3>What's new in beta.2 and beta.3</h3>
     <ul class="plain whatsnew">
       <li><strong>Imports and the pass after Stop are more accurate.</strong> They run the speech model at its full lookahead and the speaker model with its offline geometry. On the hand-labelled AMI meeting the word error rate went from 19.8 to 18.0 percent with the EN model and from 23.0 to 20.7 with Nemotron 3.5, every Zoom meeting in the evaluation set improved, and the speech pass runs about 2.6 times faster. Live recording keeps its low-latency settings.</li>
       <li><strong>Languages follow the model.</strong> The language lists show what the installed speech models cover, 30 languages with Nemotron 3.5. A recording or import in a language the selected model does not cover runs on an installed model that does, or offers the Nemotron 3.5 download first. Imports ask for the language, and Japanese and Chinese are now passed to the model instead of running as automatic detection.</li>
@@ -173,8 +173,9 @@
       <li><strong>The Vulkan and CPU runtime packages run.</strong> Beta.1 always asked for the CUDA device, so they could not transcribe or record. Measured on the development PC only: Vulkan on an RTX 3080 at 25 to 28 times real time, CPU on a Ryzen 9 5900X at about 5 times.</li>
       <li><strong>Playback at a usable level.</strong> A quiet meeting is raised so its loud speech peaks near full scale, with a volume slider and an Auto level button that plays the audio as stored. The stored audio does not change.</li>
       <li><strong>A new app icon</strong> in a light and a dark variant; the taskbar button follows the taskbar theme.</li>
+      <li><strong>Beta.3 fixes two things.</strong> Names given to speakers while recording are kept after Stop; before, a name given from the speaker legend fell back to "Speaker N" on real meetings. And clicking a word after scrolling the transcript away from the cursor row works again.</li>
     </ul>
-    <p><a href="{{root}}docs/changelog/#010-beta2---2026-10-16">The full changelog</a> and the <a href="{{release_url}}">release notes</a></p>
+    <p><a href="{{root}}docs/changelog/#010-beta3---2026-10-17">The full changelog</a> and the <a href="{{release_url}}">release notes</a></p>
     <div class="cols-2">
       <div class="col">
         <h3>Measured on the development machine (Windows 11, RTX 3080 10 GB)</h3>

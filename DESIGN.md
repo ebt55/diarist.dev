@@ -125,6 +125,8 @@ Links: "Roadmap" (repository `docs/plans/00-roadmap.md`), "changelog" (`/docs/ch
 
 **16 Oct 2026: 0.1.0-beta.2.** The lead names the current release and that beta.1 copies reach it through Check for updates. Between the lead and the two lists, a "What's new in beta.2" list (`.whatsnew`): six items, each a bold phrase and one or two sentences in the site's words, only things the changelog states and, where there is a number, docs/04 or docs/eval back; then links to the changelog page's section and the release notes. The updater joins the measured list after its first delivered update; the untested list names what the Vulkan and CPU packages were run on. The hero's copy did not change: the version and size come from the manifest. Copy that no new fact touched was left as written.
 
+**17 Oct 2026: 0.1.0-beta.3.** The lead names beta.3 as the current beta; the list is headed "What's new in beta.2 and beta.3" and ends with one item for beta.3's two fixes, from its changelog entry; the changelog link points at the beta.3 section. The fallback release in site.config.json and the status line on /code-signing/ follow the release.
+
 ### Open source (id `open`)
 
 As v0.1 (MIT, runtime and model licences, buttons GitHub, Report a problem, Contributing), plus one factual line after the licence sentence: "There is no paid tier, no licence key and no account. Speaker separation is part of the app." Stated, not sold: no comparison to anyone.
