@@ -176,8 +176,9 @@ The code in this repository (HTML, CSS and build scripts) is MIT licensed: see `
 
 The Diarist marks in `src/assets` (`logo.svg`, `logo-mono.svg`, `wordmark.svg`,
 `wordmark-dark.svg`, `social.png`, and `favicon.png` and `apple-touch-icon.png` rendered
-from `logo.svg`) are licensed under
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): reuse and adapt them with
-attribution to the Diarist project. The letterforms in the wordmark and social preview are
+from `logo.svg`) are copyright Ebin Babu Thomas and are not MIT. Terms are in the app
+repository's [branding/README.md](https://github.com/ebt55/diarist/blob/main/branding/README.md):
+use them to refer to Diarist or to package the official builds, not on forks or other
+products. The letterforms in the wordmark and social preview are
 outlines of Inter by The Inter Project Authors, licensed under the SIL Open Font License 1.1.
 The screenshots are read at build time from the app repository's `docs/screenshots`.
