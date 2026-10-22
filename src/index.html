@@ -40,7 +40,7 @@
     <div class="cols-2">
       <div class="col">
         <h3>Live</h3>
-        <p>Press Record. Your microphone is "me"; the sound your computer plays (Teams, Zoom, Meet, a browser) is split into the other speakers. Text appears in about a second. When you stop, the recording is processed once more with the full context, and the names you gave people during the meeting carry over.</p>
+        <p>Press Record. Your microphone is "me"; the sound your computer plays (Teams, Zoom, Meet, a browser) is split into the other speakers. Text appears in about a second. When you stop, the recording is processed once more with the full context, and the names you gave people during the meeting carry over. Without headphones, the microphone's copy of the meeting is detected and removed from "me"; headphones still give the cleanest result.</p>
         <ul class="facts">
           <li>Ctrl+Alt+R starts a recording from any app.</li>
           <li>GPU memory: budget 2 GB, measured on an RTX 3080.</li>
@@ -164,8 +164,8 @@
 
   <section id="status" class="section wrap" aria-labelledby="status-title">
     <h2 id="status-title">Status</h2>
-    <p class="lead">0.1.0-beta.3, released 17 Oct 2026, is the current beta. Installed copies update to it through Check for updates.</p>
-    <h3>What's new in beta.2 and beta.3</h3>
+    <p class="lead">0.1.0-beta.4, released 22 Oct 2026, is the current beta. Installed copies update to it through Check for updates.</p>
+    <h3>What's new in beta.2, beta.3 and beta.4</h3>
     <ul class="plain whatsnew">
       <li><strong>Imports and the pass after Stop are more accurate.</strong> They run the speech model at its full lookahead and the speaker model with its offline geometry. On the hand-labelled AMI meeting the word error rate went from 19.8 to 18.0 percent with the EN model and from 23.0 to 20.7 with Nemotron 3.5, every Zoom meeting in the evaluation set improved, and the speech pass runs about 2.6 times faster. Live recording keeps its low-latency settings.</li>
       <li><strong>Languages follow the model.</strong> The language lists show what the installed speech models cover, 30 languages with Nemotron 3.5. A recording or import in a language the selected model does not cover runs on an installed model that does, or offers the Nemotron 3.5 download first. Imports ask for the language, and Japanese and Chinese are now passed to the model instead of running as automatic detection.</li>
@@ -174,8 +174,10 @@
       <li><strong>Playback at a usable level.</strong> A quiet meeting is raised so its loud speech peaks near full scale, with a volume slider and an Auto level button that plays the audio as stored. The stored audio does not change.</li>
       <li><strong>A new app icon</strong> in a light and a dark variant; the taskbar button follows the taskbar theme.</li>
       <li><strong>Beta.3 fixes two things.</strong> Names given to speakers while recording are kept after Stop; before, a name given from the speaker legend fell back to "Speaker N" on real meetings. And clicking a word after scrolling the transcript away from the cursor row works again.</li>
+      <li><strong>Beta.4 handles recording with speakers.</strong> Without headphones the microphone hears the meeting, so the other side was transcribed a second time as "me". Diarist now detects that the microphone hears the system audio and removes the echoed words from "me", in the live view and in the final transcript; the processing after Stop cancels the echo before it transcribes you, and the other side's own channel is never touched. Measured on one PC and five recordings: after Stop, 0 to 0.7 percent of "me" was left as copies of the other side, and 98.3 percent or more of the author's own words were kept on the 111-minute speaker recording. The live view says when it hears echo; the meeting details say how many words were removed, with Restore; the setting is Settings, Recording, "Recording with speakers (echo)". Headphones still give the cleanest "me".</li>
+      <li><strong>Beta.4 names the copyright holder.</strong> The licence file names Ebin Babu Thomas instead of "Diarist contributors". The Diarist name, logo and icons are no longer offered under CC BY 4.0: they may be used unmodified to refer to Diarist or to package the official builds, not on forks or other products. The code stays MIT.</li>
     </ul>
-    <p><a href="{{root}}docs/changelog/#010-beta3---2026-10-17">The full changelog</a> and the <a href="{{release_url}}">release notes</a></p>
+    <p><a href="{{root}}docs/changelog/#010-beta4---2026-10-22">The full changelog</a> and the <a href="{{release_url}}">release notes</a></p>
     <div class="cols-2">
       <div class="col">
         <h3>Measured on the development machine (Windows 11, RTX 3080 10 GB)</h3>
@@ -197,13 +199,13 @@
         </ul>
       </div>
     </div>
-    <p class="prose">Next: punctuation restoration, better handling of speaker changes, recording without headphones, and recognising the same person across meetings.</p>
+    <p class="prose">Next: punctuation restoration, better handling of speaker changes, echo cancellation in the live view, and recognising the same person across meetings.</p>
     <p><a href="{{roadmap_url}}">Roadmap</a>, <a href="{{root}}docs/changelog/">changelog</a> and <a href="{{root}}docs/known-issues/">known issues</a></p>
   </section>
 
   <section id="open" class="section wrap" aria-labelledby="open-title">
     <h2 id="open-title">Open source</h2>
-    <p class="prose">MIT licence. The runtime (Apache-2.0) and the models (OpenMDW-1.1, NVIDIA Open Model License) are downloaded at first run under their own licences. There is no paid tier, no licence key and no account. Free forever. Speaker separation is part of the app. Issues and pull requests on GitHub.</p>
+    <p class="prose">MIT licence. The runtime (Apache-2.0) and the models (OpenMDW-1.1, NVIDIA Open Model License) are downloaded at first run under their own licences. There is no paid tier, no licence key and no account. Free forever. Speaker separation is part of the app. The Diarist name, logo and icons are not MIT: they may be used to refer to Diarist or to package the official builds, not on forks or other products. Issues and pull requests on GitHub.</p>
     <div class="actions">
       <a class="btn btn-secondary" href="{{repo_url}}">GitHub</a>
       <a class="btn btn-secondary" href="{{issues_url}}">Report a problem</a>

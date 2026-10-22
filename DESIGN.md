@@ -127,6 +127,8 @@ Links: "Roadmap" (repository `docs/plans/00-roadmap.md`), "changelog" (`/docs/ch
 
 **17 Oct 2026: 0.1.0-beta.3.** The lead names beta.3 as the current beta; the list is headed "What's new in beta.2 and beta.3" and ends with one item for beta.3's two fixes, from its changelog entry; the changelog link points at the beta.3 section. The fallback release in site.config.json and the status line on /code-signing/ follow the release.
 
+**22 Oct 2026: 0.1.0-beta.4.** The lead names beta.4; the list is headed "What's new in beta.2, beta.3 and beta.4" and ends with two items for beta.4 from its changelog entry: recording with speakers, with the known-issues page's numbers labelled as measured on one PC and five recordings, and the copyright holder and the marks' terms. The changelog link points at the beta.4 section; the "Next" line drops recording without headphones and names echo cancellation in the live view instead. The Live column of How it works gains one sentence that recording without headphones is handled. Open source gains one sentence that the name, logo and icons are not MIT, from the app README's licence paragraph. The fallback release and the /code-signing/ status line follow the release.
+
 ### Open source (id `open`)
 
 As v0.1 (MIT, runtime and model licences, buttons GitHub, Report a problem, Contributing), plus one factual line after the licence sentence: "There is no paid tier, no licence key and no account. Speaker separation is part of the app." Stated, not sold: no comparison to anyone.

@@ -19,10 +19,10 @@
     "alt": "The app with an imported 21-minute meeting open. On the left, the list of meetings and a search box. On the right, four speaker chips (Project manager, Speaker 2, Speaker 3, Speaker 4), transcript lines that each start with a timestamp and a coloured speaker label, and an audio player with a waveform."
   },
   "release": {
-    "version": "0.1.0-beta.3",
-    "installerName": "Diarist_0.1.0-beta.3_x64-setup.exe",
-    "installerSize": 7196912,
-    "downloadUrl": "https://github.com/ebt55/diarist/releases/download/v0.1.0-beta.3/Diarist_0.1.0-beta.3_x64-setup.exe"
+    "version": "0.1.0-beta.4",
+    "installerName": "Diarist_0.1.0-beta.4_x64-setup.exe",
+    "installerSize": 7430483,
+    "downloadUrl": "https://github.com/ebt55/diarist/releases/download/v0.1.0-beta.4/Diarist_0.1.0-beta.4_x64-setup.exe"
   },
   "docs": [
     { "slug": "install", "label": "Install", "source": "docs/INSTALL.md", "summary": "Installing, the first-run setup, firewalls, offline machines, updating and uninstalling." },
