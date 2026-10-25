@@ -585,7 +585,7 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
       root: "../",
       title: "Code signing policy - Diarist",
       description: escapeHtml(
-        "How Diarist's Windows installer is signed through SignPath Foundation, who approves each release, what the app sends over the network, and how to check a download.",
+        "No Diarist release is code-signed yet. The policy that will apply if SignPath Foundation accepts the project, who will approve each release, what the app sends over the network, and how to check a download.",
       ),
       canonical: `${config.siteUrl}/code-signing/`,
       csp: csp([]),

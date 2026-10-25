@@ -7,32 +7,32 @@
 {{> header}}
 <main id="main" class="wrap page">
   <h1>Code signing policy</h1>
-  <p class="page-lede">Free code signing provided by <a href="https://about.signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a>.</p>
-  <p class="small">Status, 22 Oct 2026: signing through SignPath Foundation is being set up, and no release is signed yet. Releases up to and including 0.1.0-beta.4 are not code-signed; check those by their SHA-256 in the release notes. This page changes when the first signed release is published.</p>
+  <p class="page-lede">No Diarist release is code-signed, and the project has not applied for signing yet. This page is the policy that will apply if SignPath Foundation accepts the project: free code signing provided by <a href="https://about.signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a>.</p>
+  <p class="small">Status, 25 Oct 2026: not applied. Releases up to and including 0.1.0-beta.4 are not code-signed; check each one by its SHA-256 in the release notes. This page changes when signing starts.</p>
 
   <section id="signed" aria-labelledby="signed-title">
-    <h2 id="signed-title">What is signed</h2>
+    <h2 id="signed-title">What will be signed</h2>
     <ul class="plain">
-      <li>From the first signed release on, the installer (<code>Diarist_&lt;version&gt;_x64-setup.exe</code>) and the app inside it (<code>diarist.exe</code>) carry an Authenticode signature with a certificate issued to SignPath Foundation. Windows shows SignPath Foundation as the publisher, not Diarist or its author.</li>
-      <li>Not signed: <code>uninstall.exe</code>, which the installer writes during installation, and the NSIS helper libraries the installer unpacks while it runs.</li>
+      <li>From the first signed release on, the installer (<code>Diarist_&lt;version&gt;_x64-setup.exe</code>) and the app inside it (<code>diarist.exe</code>) will carry an Authenticode signature with a certificate issued to SignPath Foundation. Windows will show SignPath Foundation as the publisher, not Diarist or its author.</li>
+      <li>Left unsigned even then: <code>uninstall.exe</code>, which the installer writes during installation, and the NSIS helper libraries the installer unpacks while it runs.</li>
       <li>Never signed by this project: the speech runtime (NeMo-Speech.cpp, published by NVIDIA) and the models, which the app downloads when you ask for them. SignPath Foundation's terms do not allow a project to sign other projects' files. The app checks each download against its published SHA-256.</li>
-      <li>Updates carry a second, separate signature: the updater checks every downloaded installer against the project's own updater key before it runs it.</li>
+      <li>Updates already carry a separate signature of their own: the updater checks every downloaded installer against the project's updater key before it runs it. That is not code signing, and Windows does not show it.</li>
     </ul>
   </section>
 
   <section id="builds" aria-labelledby="builds-title">
-    <h2 id="builds-title">How signed builds are made</h2>
+    <h2 id="builds-title">How signed builds will be made</h2>
     <ul class="plain">
-      <li>Only the repository's <a href="{{blob_base}}.github/workflows/sign-release.yml">sign-release workflow</a> submits files for signing. It builds on GitHub-hosted runners from a commit on the <code>main</code> branch of <a href="{{repo_url}}">github.com/ebt55/diarist</a>; the release tag is created on that commit when the release is published.</li>
-      <li>For every signing request, SignPath checks that the files come from that workflow run, that repository and that branch, so a signed file is a build of the public source. The source includes the build scripts and the workflow files, and they are reviewed like any other change.</li>
-      <li>Nothing is signed until the approver has approved the signing request in SignPath, by hand, for each release.</li>
-      <li>The signing key is held by SignPath in a hardware security module. The project never has a copy.</li>
+      <li>Only the repository's <a href="{{blob_base}}.github/workflows/sign-release.yml">sign-release workflow</a> will submit files for signing. The workflow is in the repository, but it cannot sign anything until SignPath Foundation accepts the project. It builds on GitHub-hosted runners from a commit on the <code>main</code> branch of <a href="{{repo_url}}">github.com/ebt55/diarist</a>; the release tag is created on that commit when the release is published.</li>
+      <li>For every signing request, SignPath will check that the files come from that workflow run, that repository and that branch, so a signed file is a build of the public source. The source includes the build scripts and the workflow files, and they are reviewed like any other change.</li>
+      <li>Nothing will be signed until the approver has approved the signing request in SignPath, by hand, for each release.</li>
+      <li>The signing key will be held by SignPath in a hardware security module. The project will never have a copy.</li>
     </ul>
   </section>
 
   <section id="team" aria-labelledby="team-title">
     <h2 id="team-title">Team roles</h2>
-    <p>Diarist is a one-person project. Ebin (<a href="https://github.com/ebt55">ebt55 on GitHub</a>) holds every role. No one else has write access to the repository or a role in SignPath.</p>
+    <p>Diarist is a one-person project. Ebin (<a href="https://github.com/ebt55">ebt55 on GitHub</a>) holds every role. No one else has write access to the repository. There is no SignPath account yet; Ebin will hold every role there too.</p>
     <div class="table-wrap" tabindex="0" role="region" aria-label="Team roles">
     <table>
       <thead>
@@ -45,11 +45,14 @@
       </tbody>
     </table>
     </div>
-    <p>With one person in every role, these controls take the place of a second person:</p>
+    <p>With one person in every role, these controls take the place of a second person. In place now:</p>
+    <ul class="plain">
+      <li>The <code>main</code> branch and the release tags cannot be force-pushed or deleted, and <code>main</code> changes only through pull requests.</li>
+    </ul>
+    <p>In place before the first signed release:</p>
     <ul class="plain">
       <li>Multi-factor authentication on the GitHub account and on the SignPath account.</li>
       <li>Signed builds come only from the sign-release workflow on GitHub-hosted runners, from <code>main</code>; a build made on any other machine, including the author's, is never signed.</li>
-      <li>The <code>main</code> branch and the release tags cannot be force-pushed or deleted.</li>
       <li>SignPath verifies the origin of every signing request, and every request is approved by hand.</li>
     </ul>
   </section>
