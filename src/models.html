@@ -7,7 +7,7 @@
 {{> header}}
 <main id="main" class="wrap page">
   <h1>Choosing a runtime package and models</h1>
-  <p class="page-lede">Diarist runs one runtime and three models, all files in your data folder. This page is for picking them by what your PC has, and for seeing the numbers behind the defaults. Published numbers come from leaderboards and say so; measured numbers were taken on {{machine}}, {{updated_long}}. The charts are drawn from <a href="{{benchmarks_url}}">docs/eval/benchmarks.json</a> in the repository, which names the file each number comes from.</p>
+  <p class="page-lede">Diarist runs one speech runtime with a speaker model and one of several speech models, and since 0.1.0-beta.5 a punctuation model on the CPU with its own runtime; all are files in your data folder. This page is for picking them by what your PC has, and for seeing the numbers behind the defaults. Published numbers come from leaderboards and say so; measured numbers were taken on {{machine}} and say when. The charts are drawn from <a href="{{benchmarks_url}}">docs/eval/benchmarks.json</a> in the repository, which names the file each number comes from.</p>
 
   <section id="pick" aria-labelledby="pick-title">
     <h2 id="pick-title">By your GPU</h2>
@@ -28,6 +28,7 @@
     <p class="rule">CUDA kernels are built for Turing (sm_75), Ampere (sm_86), Ada (sm_89) and Blackwell (sm_120). An NVIDIA card older than Turing uses the Vulkan package.</p>
     <p class="rule">Vulkan package: measured on the RTX 3080 only, 16 Oct 2026, through the app's own path on a 5-minute clip of the AMI meeting: 25 to 28 times real time (CUDA 67 to 69 on the same clip), the same word count as CUDA with 3.2 percent of the words different, and the same speakers. Nothing is known about AMD or Intel GPUs yet.</p>
     <p class="rule">The setup screen checks the GPU (NVML for NVIDIA, DXGI for any vendor), preselects the package and lets you change it. Package sizes: CUDA 98 MB, Vulkan 19 MB, CPU 6 MB. The app reads free GPU memory before it starts a job.</p>
+    <p class="rule">Punctuation is the same on every PC: the punctuation model (Horizon-Labs punctuation-restoration-small, 306 MB with its tokenizer, ONNX Runtime 1.31.0 and licence files) runs on the CPU after the speech pass, whatever the package, and uses no GPU memory.</p>
   </section>
 
   <section id="diarization" aria-labelledby="diarization-title">
@@ -44,14 +45,17 @@
 
   <section id="measured" aria-labelledby="measured-title">
     <h2 id="measured-title">Measured in Diarist</h2>
-    <p>The evaluation harness in the repository runs the app's own command-line tool over the author's meetings and one public AMI meeting, and scores the result against a reference. Everything in this section was measured on an RTX 3080 10 GB, {{updated_long}}, with the settings 0.1.0-beta.2 ships: imports and the pass after Stop run the speech model at its full lookahead (1.12 s) and the diarizer with its offline geometry; live recording keeps its low-latency settings.</p>
+    <p>The evaluation harness in the repository runs the app's own command-line tool over the author's meetings and one public AMI meeting, and scores the result against a reference. Everything in this section was measured on the development PC, with an RTX 3080 10 GB, and each part says when. Imports and the pass after Stop run with the file settings 0.1.0-beta.5 ships: the speech model at its full lookahead (1.12 s) and the diarizer with its offline geometry. The chart is the 0.1.0-beta.5 release check, {{measured_long}}, which also collapses repeated-word bursts and adds punctuation; punctuation never changes a word, so the scores are the same without it.</p>
 {{chart_measured}}
-    <p>Speaker attribution was close with both models: 0.2 to 0.3 percent of words went to the wrong speaker on the four Zoom meetings, 2.2 to 2.3 on the far-field AMI meeting; within a second of a speaker change, 5.5 to 7.8 percent with Nemotron 3.5 and 5.6 to 12.7 with the EN model. So the choice comes down to the words: the EN model keeps more of what was said; Nemotron 3.5 drops about 40 percent of filler words, keeps quiet speech the EN model drops, and covers 40+ languages with automatic detection.</p>
+    <p>Over the whole evaluation set, 36 recordings and 28 hours, cpWER with the EN model went from 11.01 percent with 0.1.0-beta.4 to 10.85, all of it from the collapsed bursts, and stayed at 11.30 with Nemotron 3.5; no recording got worse.</p>
+    <p>Speaker attribution was close with both models: 0.2 to 0.3 percent of words went to the wrong speaker on the four Zoom meetings, 2.2 to 2.3 on the far-field AMI meeting; within a second of a speaker change, 5.5 to 7.8 percent with Nemotron 3.5 and 5.6 to 12.7 with the EN model (16 Oct 2026). So the choice comes down to the words: the EN model keeps more of what was said; Nemotron 3.5 drops about 40 percent of filler words, keeps quiet speech the EN model drops, and covers 40+ languages with automatic detection.</p>
+    <p>Peak GPU memory was measured on 15 Oct 2026. The 560 ms live lookahead of 0.1.0-beta.5 does not change it: measured on 27 Oct 2026, the live server with both sessions stayed within 3 MiB per session of the runtime's default lookahead.</p>
 {{chart_vram}}
     <h3>Speed</h3>
     <ul class="plain">
-      <li>Import: about {{import_factor}} times real time on the RTX 3080 over the whole import, so an hour of audio takes about two minutes. Measured over the seven evaluation sessions, 324 minutes of audio, {{updated_long}}; the speech pass alone runs 76 to 78 times real time, the rest is a standalone diarization pass the app skips.</li>
-      <li>Live: the first text appears about {{live_first_text}} s after speech starts, and two channels (microphone and system audio) keep up in real time. Measured on an RTX 3080 10 GB, 15 Oct 2026.</li>
+      <li>Import: about {{import_factor}} times real time on the RTX 3080 over the whole import, so an hour of audio takes about two minutes. Measured over the seven evaluation sessions, 324 minutes of audio, 16 Oct 2026; the speech pass alone runs 76 to 78 times real time, the rest is a standalone diarization pass the app skips.</li>
+      <li>Punctuation, after the speech pass: about 5 to 6 seconds of CPU per hour of audio (5.3 to 5.6 over the 28 hours of the evaluation set), 0.65 GB of RAM while it runs, no GPU memory. Measured on the development PC, 27 Oct 2026.</li>
+      <li>Live: the first words of an utterance appear about {{live_first_text}} s after they are spoken, and two channels (microphone and system audio) keep up in real time. Since 0.1.0-beta.5 live recording runs with 560 ms of lookahead, which makes fewer errors than the runtime's 160 ms, where words appeared after about 0.14 s. Measured on an RTX 3080 10 GB, 27 Oct 2026.</li>
     </ul>
   </section>
 
@@ -69,7 +73,7 @@
       <li><strong>Quiet speech with the EN model.</strong> On about 10 minutes of FLEURS English, where 36 of the 55 recordings peak below -30 dBFS, the EN model scored 21.5 percent WER, nearly all of it words left out, against 8.8 for Nemotron 3.5. For a soft-spoken participant, a far microphone or a file recorded at a low level, use Nemotron 3.5 or a louder source.</li>
       <li><strong>Eight speakers.</strong> The diarizer has eight labels per recording. A ninth person is merged into an existing label; split a recording that holds several meetings before importing it.</li>
       <li><strong>Speakers with a few words.</strong> Imports and the pass after Stop can merge a participant who says only a sentence or two into another label: on one Zoom meeting a participant with 7 words lost their label with both speech models (5 speakers found as 4). It is the cost of the offline diarizer geometry, which elsewhere puts fewer words near a speaker change on the wrong speaker.</li>
-      <li><strong>Punctuation.</strong> The Nemotron models punctuate little (0.2 and 2.5 percent of words). Lines are split at pauses and speaker changes; punctuation restoration is on the roadmap.</li>
+      <li><strong>Punctuation.</strong> The Nemotron models punctuate little (0.2 and 2.5 percent of words), so since 0.1.0-beta.5 a punctuation model adds periods, commas, question marks and sentence capitals after Stop and on imports, without changing a word. It is a second model's guess: against Zoom's own transcripts of the author's meetings, about two in three of its periods and question marks are where Zoom put one, its question marks are right 0.39 of the time on the far-field AMI meeting, and it writes about one comma per sentence where Zoom writes about two. Hindi, Japanese and Chinese get no commas, Thai is not punctuated, and the live view stays unpunctuated.</li>
       <li><strong>Overlap and far-field audio.</strong> People talking over each other, far-field microphones and noisy rooms degrade both the words and the labels; the AMI row above shows how much.</li>
       <li><strong>Vulkan and CPU.</strong> Both packages run since 0.1.0-beta.2 and were measured on the development PC only: Vulkan on the RTX 3080, CPU on a Ryzen 9 5900X. AMD and Intel GPUs are untested.</li>
       <li><strong>What to expect.</strong> On clean meeting audio about one word in 15 to 20 is wrong or missing with any of these models; on far-field room recordings about one in 9.</li>
@@ -83,8 +87,8 @@
       <li>VoiceArena Diarization-Bench v1: 139 English conversations, collar 0, overlap scored. As cited in the model guide, October 2026.</li>
       <li>Open ASR leaderboard: average WER over its English test sets. As cited in the model guide, October 2026.</li>
       <li>The Nemotron 3.5 ASR Streaming model card: FLEURS word error rates per language at the 1.12 s setting. As cited in the model guide, October 2026.</li>
-      <li><a href="{{blob_base}}docs/04-model-guide.md">docs/04-model-guide.md</a>, the model and hardware guide (v0.3, 16 Oct 2026): the published tables, the package measurements and rules, the GPU memory measurements and the language table. Rendered here as <a href="{{root}}docs/models/">Models and hardware</a>.</li>
-      <li><a href="{{blob_base}}docs/eval/">docs/eval</a>: the evaluation runs of 15 and 16 Oct 2026. The recordings and the pipeline are described in <a href="{{root}}docs/eval/">How we measure</a>.</li>
+      <li><a href="{{blob_base}}docs/04-model-guide.md">docs/04-model-guide.md</a>, the model and hardware guide (v0.3, 16 Oct 2026; punctuation added 26 Oct 2026): the published tables, the package measurements and rules, the GPU memory measurements, the language table and the punctuation model. Rendered here as <a href="{{root}}docs/models/">Models and hardware</a>.</li>
+      <li><a href="{{blob_base}}docs/eval/">docs/eval</a>: the evaluation runs of 15 and 16 Oct 2026, and the 0.1.0-beta.5 release check, the live lookahead and the punctuation measurements of 26 and 27 Oct 2026. The recordings and the pipeline are described in <a href="{{root}}docs/eval/">How we measure</a>.</li>
       <li><a href="{{benchmarks_url}}">docs/eval/benchmarks.json</a>: the data file behind the charts, updated {{updated}}. Where each block takes its numbers from, as the file states it:</li>
     </ul>
     <ul class="plain sources-from">

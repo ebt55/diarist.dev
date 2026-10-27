@@ -627,7 +627,9 @@ export function vramChart(b: Benchmarks, blobBase: string): { html: string; summ
       bars: [{ value: r.gb, text: `${fixed(r.gb, dec)} GB`, series: 0 }],
     })),
   });
-  const caption = `${esc(v.source)}, ${esc(b.updated)}; from the <a href="${esc(blobBase)}docs/04-model-guide.md">model guide</a>. Live recording and a file job never run at the same time: file jobs wait until the recording stops.`;
+  // No date here: the block has none of its own, and the data file's `updated` moves with
+  // every other block. The page says when these were measured.
+  const caption = `${esc(v.source)}; from the <a href="${esc(blobBase)}docs/04-model-guide.md">model guide</a>. Live recording and a file job never run at the same time: file jobs wait until the recording stops.`;
   const table = [
     "<table>",
     "<thead><tr><th scope=\"col\">Scenario</th><th scope=\"col\">Peak GPU memory</th><th scope=\"col\">Note</th></tr></thead>",
