@@ -15,7 +15,7 @@
         <a class="btn btn-primary" href="{{download_url}}">Download for Windows{{prerelease_tag}}</a>
         <a class="btn btn-secondary" href="{{repo_url}}">View on GitHub</a>
       </div>
-      <p class="meta">{{version}}, {{installer_size}} installer. First run downloads the runtime and models, about 870 MB. Windows 10 and 11, NVIDIA GPU recommended. <a href="{{release_url}}">Release notes and checksum</a>. <a href="{{root}}code-signing/">Code signing policy</a></p>
+      <p class="meta">{{version}}, {{installer_size}} installer. First run downloads the runtime (98 MB) and the recommended models with punctuation (1.0 GB). Windows 10 and 11, NVIDIA GPU recommended. <a href="{{release_url}}">Release notes and checksum</a>. <a href="{{root}}code-signing/">Code signing policy</a></p>
       <p class="small">Linux is planned. macOS is not: nobody on the project owns a Mac.</p>
       <p class="small">If you use a coding agent (Claude Code, Codex or similar), the <a href="{{root}}docs/agent-setup/">agent setup guide</a> lets it check your PC, pick the models and set everything up.</p>
     </div>
@@ -40,7 +40,7 @@
     <div class="cols-2">
       <div class="col">
         <h3>Live</h3>
-        <p>Press Record. Your microphone is "me"; the sound your computer plays (Teams, Zoom, Meet, a browser) is split into the other speakers. Text appears in about a second. When you stop, the recording is processed once more with the full context, and the names you gave people during the meeting carry over. Without headphones, the microphone's copy of the meeting is detected and removed from "me"; headphones still give the cleanest result.</p>
+        <p>Press Record. Your microphone is "me"; the sound your computer plays (Teams, Zoom, Meet, a browser) is split into the other speakers. Text appears in about a second. When you stop, the recording is processed once more with the full context and punctuated, and the names you gave people during the meeting carry over. Without headphones, the microphone's copy of the meeting is detected and removed from "me"; headphones still give the cleanest result.</p>
         <ul class="facts">
           <li>Ctrl+Alt+R starts a recording from any app.</li>
           <li>GPU memory: budget 2 GB, measured on an RTX 3080.</li>
@@ -54,6 +54,7 @@
           <li>English by default; 40+ languages with Nemotron 3.5, 30 of them offered in the app's language lists.</li>
           <li>Peak GPU memory 2.6 GB with the English model, 1.82 GB with Nemotron 3.5, measured on a 77-minute file.</li>
           <li>File jobs wait until a recording stops, so the two never run at the same time.</li>
+          <li>Punctuation and capitals are added on the CPU, about 5 to 6 seconds per hour of audio, without changing a word.</li>
         </ul>
       </div>
     </div>
@@ -113,7 +114,7 @@
     <div class="cols-2 cols-wide-right">
       <p class="lead">Audio, transcripts, names, settings and logs stay in one folder on your computer.</p>
       <div class="col">
-        <p>The app connects to the internet only when you press a button that says so: installing the runtime (from GitHub), downloading a model (from Hugging Face), checking for a newer runtime, or checking for updates. It never checks anything on its own. There is no account, no analytics and no crash reporting. A crash leaves a report in the data folder's logs; it is never sent.</p>
+        <p>The app connects to the internet only when you press a button that says so: installing the runtime (from GitHub), downloading a model (from Hugging Face; the punctuation model's runtime and licence files from the project's releases on GitHub), checking for a newer runtime, or checking for updates. The app makes every download itself, over https only. It never checks anything on its own. There is no account, no analytics and no crash reporting. A crash leaves a report in the data folder's logs; it is never sent.</p>
         <p>This website is the same: no cookies, no analytics, no third-party requests.</p>
         <p><a href="{{root}}docs/privacy/">The privacy page</a></p>
       </div>
@@ -158,14 +159,27 @@
       <li>Nemotron 3 Diarization (speakers, 102 MB)</li>
       <li>Nemotron Speech Streaming EN 0.6B (English, default, 668 MB)</li>
       <li>Nemotron 3.5 ASR Streaming (40+ languages, optional, 742 MB)</li>
+      <li>Horizon-Labs punctuation-restoration-small with ONNX Runtime 1.31.0 (punctuation and capitals, on the CPU, default, 306 MB)</li>
     </ul>
     <p><a href="{{root}}models/">Charts and the numbers behind these choices</a></p>
   </section>
 
   <section id="status" class="section wrap" aria-labelledby="status-title">
     <h2 id="status-title">Status</h2>
-    <p class="lead">0.1.0-beta.4, released 22 Oct 2026, is the current beta. Installed copies update to it through Check for updates.</p>
-    <h3>What's new in beta.2, beta.3 and beta.4</h3>
+    <p class="lead">0.1.0-beta.5, released 27 Oct 2026, is the current beta. Installed copies update to it through Check for updates.</p>
+    <h3>What's new in beta.5</h3>
+    <ul class="plain whatsnew">
+      <li><strong>Punctuation and capitals.</strong> After Stop and on every import, a small model adds periods, commas and question marks, and Diarist capitalises the start of each sentence; lines end at sentence ends where the pause allows. It runs on the CPU after transcription, about 5 to 6 seconds per hour of audio, with no GPU memory, and downloads on first run with the other models, about 0.3 GB. It never changes a word, its time or its speaker. The speech model's own text is kept, so Remove punctuation on a meeting goes back to it exactly and Add punctuation adds it again; Settings adds it to older meetings in bulk. About two in three of its periods and question marks are where Zoom's own transcripts put one, and it writes about half as many commas as Zoom does. The live view stays unpunctuated.</li>
+      <li><strong>Repeated-word loops are collapsed.</strong> The EN model sometimes writes one word many times in a burst ("the the the the"). After Stop and on imports each burst is now kept as one word; repeats at speaking pace, such as "no no no no" or a stutter, stay. The meeting details say how many bursts were collapsed. On by default; a setting without a switch in the app keeps every word in transcripts built afterwards.</li>
+      <li><strong>Process again.</strong> A finished recording whose live transcript was kept (Settings, "Keep the live transcript", off by default) can be processed again from its stored audio with today's models and settings. The audio is only read; the new transcript becomes the one shown, every earlier one stays, and names given while recording carry over.</li>
+      <li><strong>Less of the other side in "me" without headphones.</strong> When you say almost nothing during a long meeting played on speakers, the echo gate now removes far more of what is left of a loud echo: on one long recording, the words in "me" that look like echo went from 253 to 42, and every other recording and test fixture came out as before. Stored meetings change only with Process again. Still open: your own words spoken entirely over loud speech from the other side can be removed (about one in four on a test fixture); headphones avoid it, and a fix is planned.</li>
+      <li><strong>Live text is more accurate.</strong> Live recording runs both Nemotron models with 560 ms of lookahead instead of 160 ms. Words show about half a second after they are spoken, against about 0.14 s before, with fewer errors: on the hand-labelled AMI meeting live word error went from 19.75 to 18.03 percent with the EN model and from 23.05 to 21.55 with Nemotron 3.5, and it was lower on all six Zoom meetings measured. GPU memory is unchanged.</li>
+      <li><strong>Diarist downloads models itself.</strong> Up to beta.4 the runtime fetched them through Windows' <code>curl.exe</code>, which failed on networks that block certificate revocation checks. Diarist's own downloader, which the engine install already used, works over https only, resumes an interrupted download where it stopped, and checks each file's size and SHA-256. A per-app firewall now sees <code>diarist.exe</code> for every download.</li>
+      <li><strong>Data folders with long paths work,</strong> also on a network share. Imports and recordings failed once the runtime's path in the data folder reached 260 characters, and so did the database; Diarist now passes long paths in Windows' extended-length form. Checked with a 264-character data folder; a live recording from one is still to be tried by hand.</li>
+      <li><strong>Measured on one PC.</strong> On the evaluation set, 36 recordings and 28 hours (35 of the author's own and the public AMI meeting), word error with the EN model fell from 11.01 to 10.85 percent, all of it from the collapsed loops, and stayed at 11.30 with Nemotron 3.5. No recording got worse.</li>
+      <li><strong>The database is upgraded</strong> at the first start, and the old one is kept as <code>diarist.db.bak-3</code>. Beta.4 cannot open the upgraded database, so going back to beta.4 means restoring that copy.</li>
+    </ul>
+    <h3>What changed in beta.2, beta.3 and beta.4</h3>
     <ul class="plain whatsnew">
       <li><strong>Imports and the pass after Stop are more accurate.</strong> They run the speech model at its full lookahead and the speaker model with its offline geometry. On the hand-labelled AMI meeting the word error rate went from 19.8 to 18.0 percent with the EN model and from 23.0 to 20.7 with Nemotron 3.5, every Zoom meeting in the evaluation set improved, and the speech pass runs about 2.6 times faster. Live recording keeps its low-latency settings.</li>
       <li><strong>Languages follow the model.</strong> The language lists show what the installed speech models cover, 30 languages with Nemotron 3.5. A recording or import in a language the selected model does not cover runs on an installed model that does, or offers the Nemotron 3.5 download first. Imports ask for the language, and Japanese and Chinese are now passed to the model instead of running as automatic detection.</li>
@@ -177,7 +191,7 @@
       <li><strong>Beta.4 handles recording with speakers.</strong> Without headphones the microphone hears the meeting, so the other side was transcribed a second time as "me". Diarist now detects that the microphone hears the system audio and removes the echoed words from "me", in the live view and in the final transcript; the processing after Stop cancels the echo before it transcribes you, and the other side's own channel is never touched. Measured on one PC and five recordings: after Stop, 0 to 0.7 percent of "me" was left as copies of the other side, and 98.3 percent or more of the author's own words were kept on the 111-minute speaker recording. The live view says when it hears echo; the meeting details say how many words were removed, with Restore; the setting is Settings, Recording, "Recording with speakers (echo)". Headphones still give the cleanest "me".</li>
       <li><strong>Beta.4 names the copyright holder.</strong> The licence file names Ebin Babu Thomas instead of "Diarist contributors". The Diarist name, logo and icons are no longer offered under CC BY 4.0: they may be used unmodified to refer to Diarist or to package the official builds, not on forks or other products. The code stays MIT.</li>
     </ul>
-    <p><a href="{{root}}docs/changelog/#010-beta4---2026-10-22">The full changelog</a> and the <a href="{{release_url}}">release notes</a></p>
+    <p><a href="{{root}}docs/changelog/#010-beta5---2026-10-27">The full changelog</a> and the <a href="{{release_url}}">release notes</a></p>
     <div class="cols-2">
       <div class="col">
         <h3>Measured on the development machine (Windows 11, RTX 3080 10 GB)</h3>
@@ -199,13 +213,13 @@
         </ul>
       </div>
     </div>
-    <p class="prose">Next: punctuation restoration, better handling of speaker changes, echo cancellation in the live view, and recognising the same person across meetings.</p>
+    <p class="prose">Next: better handling of speaker changes, echo cancellation in the live view, and recognising the same person across meetings.</p>
     <p><a href="{{roadmap_url}}">Roadmap</a>, <a href="{{root}}docs/changelog/">changelog</a> and <a href="{{root}}docs/known-issues/">known issues</a></p>
   </section>
 
   <section id="open" class="section wrap" aria-labelledby="open-title">
     <h2 id="open-title">Open source</h2>
-    <p class="prose">MIT licence. The runtime (Apache-2.0) and the models (OpenMDW-1.1, NVIDIA Open Model License) are downloaded at first run under their own licences. There is no paid tier, no licence key and no account. Free forever. Speaker separation is part of the app. The Diarist name, logo and icons are not MIT: they may be used to refer to Diarist or to package the official builds, not on forks or other products. Issues and pull requests on GitHub.</p>
+    <p class="prose">MIT licence. The runtime (Apache-2.0), ONNX Runtime (Microsoft, MIT) and the models (OpenMDW-1.1, NVIDIA Open Model License; the punctuation model Apache-2.0 as declared in its model card, fine-tuned from mmBERT-small, MIT) are downloaded at first run under their own licences. There is no paid tier, no licence key and no account. Free forever. Speaker separation is part of the app. The Diarist name, logo and icons are not MIT: they may be used to refer to Diarist or to package the official builds, not on forks or other products. Issues and pull requests on GitHub.</p>
     <div class="actions">
       <a class="btn btn-secondary" href="{{repo_url}}">GitHub</a>
       <a class="btn btn-secondary" href="{{issues_url}}">Report a problem</a>

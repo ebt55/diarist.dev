@@ -8,14 +8,14 @@
 <main id="main" class="wrap page">
   <h1>Code signing policy</h1>
   <p class="page-lede">No Diarist release is code-signed, and the project has not applied for signing yet. This page is the policy that will apply if SignPath Foundation accepts the project: free code signing provided by <a href="https://about.signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a>.</p>
-  <p class="small">Status, 25 Oct 2026: not applied. Releases up to and including 0.1.0-beta.4 are not code-signed; check each one by its SHA-256 in the release notes. This page changes when signing starts.</p>
+  <p class="small">Status, 27 Oct 2026: not applied. Releases up to and including 0.1.0-beta.5 are not code-signed; check each one by its SHA-256 in the release notes. This page changes when signing starts.</p>
 
   <section id="signed" aria-labelledby="signed-title">
     <h2 id="signed-title">What will be signed</h2>
     <ul class="plain">
       <li>From the first signed release on, the installer (<code>Diarist_&lt;version&gt;_x64-setup.exe</code>) and the app inside it (<code>diarist.exe</code>) will carry an Authenticode signature with a certificate issued to SignPath Foundation. Windows will show SignPath Foundation as the publisher, not Diarist or its author.</li>
       <li>Left unsigned even then: <code>uninstall.exe</code>, which the installer writes during installation, and the NSIS helper libraries the installer unpacks while it runs.</li>
-      <li>Never signed by this project: the speech runtime (NeMo-Speech.cpp, published by NVIDIA) and the models, which the app downloads when you ask for them. SignPath Foundation's terms do not allow a project to sign other projects' files. The app checks each download against its published SHA-256.</li>
+      <li>Never signed by this project: the speech runtime (NeMo-Speech.cpp, published by NVIDIA), ONNX Runtime (published by Microsoft), which runs the punctuation model, and the models, which the app downloads when you ask for them. SignPath Foundation's terms do not allow a project to sign other projects' files. The app checks each download against its published SHA-256.</li>
       <li>Updates already carry a separate signature of their own: the updater checks every downloaded installer against the project's updater key before it runs it. That is not code signing, and Windows does not show it.</li>
     </ul>
   </section>
@@ -63,9 +63,9 @@
     <p>Diarist has no account, no analytics, no crash reporting and no telemetry. It connects to the internet only when you press a button that says so:</p>
     <ul class="plain">
       <li>Install engine, or a runtime: <code>github.com</code> and GitHub's download servers.</li>
-      <li>Install or Download a model: <code>huggingface.co</code> and its download servers, through Windows' <code>curl.exe</code>.</li>
-      <li>Add from URL: the address you typed.</li>
-      <li>Check for newer runtime: <code>api.github.com</code>.</li>
+      <li>Install or Download a model: <code>huggingface.co</code> and its download servers; for the files the project hosts on its own <a href="{{repo_url}}/releases/tag/models-2026-10">model files release</a> (ONNX Runtime and the punctuation model's licence and notice files), <code>github.com</code> and GitHub's download servers. Since 0.1.0-beta.5 the app downloads these itself, over https only, with the user agent <code>diarist/&lt;version&gt;</code>; up to 0.1.0-beta.4 the models came through Windows' <code>curl.exe</code>.</li>
+      <li>Add from URL: the address you typed, https only.</li>
+      <li>Check for newer runtime: <code>api.github.com</code>, with the user agent <code>diarist/&lt;version&gt;</code>.</li>
       <li>Check for updates: GitHub (the update manifest on <code>raw.githubusercontent.com</code>, then the installer from <code>github.com</code> if you install it).</li>
     </ul>
     <p>Like any download, these requests show your IP address to the server; nothing about your meetings, your computer or your use of the app is sent. If WebView2 is missing, the installer downloads it from Microsoft. The services involved have their own privacy policies: <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub</a>, <a href="https://huggingface.co/privacy">Hugging Face</a> and <a href="https://www.microsoft.com/en-us/privacy/privacystatement">Microsoft</a>. The full statement is <a href="{{root}}docs/privacy/">the privacy page</a>.</p>

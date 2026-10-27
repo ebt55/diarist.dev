@@ -88,6 +88,15 @@ function longDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 }
 
+/**
+ * The date of the first docs/eval note a data block's `from` field names
+ * ("docs/eval/2026-10-16-fleurs.md ..." gives "2026-10-16"), so a chart says when its own
+ * numbers were measured rather than when the data file last changed.
+ */
+function evalNoteDate(from: string): string | undefined {
+  return /docs\/eval\/(\d{4}-\d{2}-\d{2})-/.exec(from)?.[1];
+}
+
 async function fetchWithTimeout(url: string, init: RequestInit = {}, ms = 15000): Promise<Response> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
@@ -605,7 +614,8 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
       const b = parseBenchmarks(benchSrc.text);
       const blob = config.blobBase;
       const updatedLong = longDate(b.updated);
-      const made = [diarizationChart(b, blob), asrChart(b, blob), measuredChart(b, blob), vramChart(b, blob), languagesChart(b, blob, updatedLong)];
+      const languagesLong = longDate(evalNoteDate(b.languages_measured.from) ?? b.updated);
+      const made = [diarizationChart(b, blob), asrChart(b, blob), measuredChart(b, blob), vramChart(b, blob), languagesChart(b, blob, languagesLong)];
       charts.push(...made.map((m) => m.summary));
       // The Sources section lists where each block of the data file takes its numbers from,
       // straight from the file's `from` fields, so it cannot drift from the data.
@@ -640,6 +650,7 @@ export async function build(opts: BuildOptions = {}): Promise<BuildResult> {
           machine: escapeHtml(b.machine),
           updated: escapeHtml(b.updated),
           updated_long: escapeHtml(updatedLong),
+          measured_long: escapeHtml(longDate(evalNoteDate(b.asr_measured.from) ?? b.updated)),
           import_factor: String(b.speed_measured.import_realtime_factor),
           live_first_text: String(b.speed_measured.live_first_text_s),
           benchmarks_url: `${config.blobBase}${encodeRepoPath(config.benchmarks)}`,
