@@ -15,7 +15,7 @@
         <a class="btn btn-primary" href="{{download_url}}">Download for Windows{{prerelease_tag}}</a>
         <a class="btn btn-secondary" href="{{repo_url}}">View on GitHub</a>
       </div>
-      <p class="meta">{{version}}, {{installer_size}} installer. First run downloads the runtime (98 MB) and the recommended models with punctuation (1.0 GB). Windows 10 and 11, NVIDIA GPU recommended. <a href="{{release_url}}">Release notes and checksum</a>. <a href="{{root}}code-signing/">Code signing policy</a></p>
+      <p class="meta">{{version}}, {{installer_size}} installer. First run downloads the runtime (102 MB) and the recommended models with punctuation (1.13 GB). Windows 10 and 11, NVIDIA GPU recommended. <a href="{{release_url}}">Release notes and checksum</a>. <a href="{{root}}code-signing/">Code signing policy</a></p>
       <p class="small">Linux is planned. macOS is not: nobody on the project owns a Mac.</p>
       <p class="small">If you use a coding agent (Claude Code, Codex or similar), the <a href="{{root}}docs/agent-setup/">agent setup guide</a> lets it check your PC, pick the models and set everything up.</p>
     </div>
@@ -153,21 +153,29 @@
         </table>
       </div>
     </div>
-    <p class="req"><strong>Other requirements:</strong> Windows 10 (1803 or newer) or Windows 11, 64-bit; about 1.6 GB of disk for the runtime and default models; recordings about 90 MB per hour; 8 GB of RAM is comfortable.</p>
+    <p class="req"><strong>Other requirements:</strong> Windows 10 (1803 or newer) or Windows 11, 64-bit; about 1.3 GB of disk for the runtime and default models; recordings about 90 MB per hour; 8 GB of RAM is comfortable.</p>
     <h3>Models</h3>
     <ul class="plain models">
-      <li>Nemotron 3 Diarization (speakers, 102 MB)</li>
-      <li>Nemotron Speech Streaming EN 0.6B (English, default, 668 MB)</li>
+      <li>Nemotron 3 Diarization (speakers, 107 MB)</li>
+      <li>Nemotron Speech Streaming EN 0.6B (English, default, 700 MB)</li>
       <li>Nemotron 3.5 ASR Streaming (40+ languages, optional, 742 MB)</li>
-      <li>Horizon-Labs punctuation-restoration-small with ONNX Runtime 1.31.0 (punctuation and capitals, on the CPU, default, 306 MB)</li>
+      <li>Horizon-Labs punctuation-restoration-small with ONNX Runtime 1.31.0 (punctuation and capitals, on the CPU, default, 320 MB)</li>
     </ul>
     <p><a href="{{root}}models/">Charts and the numbers behind these choices</a></p>
   </section>
 
   <section id="status" class="section wrap" aria-labelledby="status-title">
     <h2 id="status-title">Status</h2>
-    <p class="lead">0.1.0-beta.5, released 27 Oct 2026, is the current beta. Installed copies update to it through Check for updates.</p>
-    <h3>What's new in beta.5</h3>
+    <p class="lead">0.1.0-beta.6, released 5 Nov 2026, is the current beta. Installed copies update to it through Check for updates.</p>
+    <h3>What's new in beta.6</h3>
+    <ul class="plain whatsnew">
+      <li><strong>You can see that it is recording.</strong> While recording, the taskbar button carries a red dot and the window title reads "● Recording · Diarist"; screen readers announce "Recording". The tray icon's recording dot is redrawn, sharp at every display scale, and the dot in the app stays solid instead of fading to pale pink.</li>
+      <li><strong>The punctuation model comes with its authors' licence files.</strong> It is pinned to their v1.1.1 release, which adds a <code>LICENSE</code> and a <code>NOTICE</code>, and Diarist installs those two files instead of the licence text it hosted itself. The model is the same file, so nothing is downloaded again and the punctuation is the same. A model folder from beta.5 shows the two files (13 kB) as missing until Download recommended fetches them.</li>
+      <li><strong>One line per download.</strong> A download made of several files, such as the punctuation model's eight, is one line in Settings and on the first-run screen. It says what is missing beside its Download button, and lists every file's address and SHA-256 under "Files and addresses".</li>
+      <li><strong>Sizes in decimal units.</strong> The first-run screen and Settings give download sizes in decimal megabytes and gigabytes, as the documentation does: the EN model is 700 MB, and the default download 1.23 GB with the CUDA runtime.</li>
+      <li><strong>File transcripts are unchanged.</strong> On the evaluation set, 36 recordings and 28 hours, every word is the same as with beta.5, with both speech models. Word error stays at 10.85 percent with the EN model and 11.30 with Nemotron 3.5. Measured on one PC.</li>
+    </ul>
+    <h3>What changed in beta.5</h3>
     <ul class="plain whatsnew">
       <li><strong>Punctuation and capitals.</strong> After Stop and on every import, a small model adds periods, commas and question marks, and Diarist capitalises the start of each sentence; lines end at sentence ends where the pause allows. It runs on the CPU after transcription, about 5 to 6 seconds per hour of audio, with no GPU memory, and downloads on first run with the other models, about 0.3 GB. It never changes a word, its time or its speaker. The speech model's own text is kept, so Remove punctuation on a meeting goes back to it exactly and Add punctuation adds it again; Settings adds it to older meetings in bulk. About two in three of its periods and question marks are where Zoom's own transcripts put one, and it writes about half as many commas as Zoom does. The live view stays unpunctuated.</li>
       <li><strong>Repeated-word loops are collapsed.</strong> The EN model sometimes writes one word many times in a burst ("the the the the"). After Stop and on imports each burst is now kept as one word; repeats at speaking pace, such as "no no no no" or a stutter, stay. The meeting details say how many bursts were collapsed. On by default; a setting without a switch in the app keeps every word in transcripts built afterwards.</li>
@@ -191,7 +199,7 @@
       <li><strong>Beta.4 handles recording with speakers.</strong> Without headphones the microphone hears the meeting, so the other side was transcribed a second time as "me". Diarist now detects that the microphone hears the system audio and removes the echoed words from "me", in the live view and in the final transcript; the processing after Stop cancels the echo before it transcribes you, and the other side's own channel is never touched. Measured on one PC and five recordings: after Stop, 0 to 0.7 percent of "me" was left as copies of the other side, and 98.3 percent or more of the author's own words were kept on the 111-minute speaker recording. The live view says when it hears echo; the meeting details say how many words were removed, with Restore; the setting is Settings, Recording, "Recording with speakers (echo)". Headphones still give the cleanest "me".</li>
       <li><strong>Beta.4 names the copyright holder.</strong> The licence file names Ebin Babu Thomas instead of "Diarist contributors". The Diarist name, logo and icons are no longer offered under CC BY 4.0: they may be used unmodified to refer to Diarist or to package the official builds, not on forks or other products. The code stays MIT.</li>
     </ul>
-    <p><a href="{{root}}docs/changelog/#010-beta5---2026-10-27">The full changelog</a> and the <a href="{{release_url}}">release notes</a></p>
+    <p><a href="{{root}}docs/changelog/#010-beta6---2026-11-05">The full changelog</a> and the <a href="{{release_url}}">release notes</a></p>
     <div class="cols-2">
       <div class="col">
         <h3>Measured on the development machine (Windows 11, RTX 3080 10 GB)</h3>
@@ -202,7 +210,7 @@
           <li>Search</li>
           <li>Export</li>
           <li>The installer</li>
-          <li>The updater, once (beta.1 to beta.2)</li>
+          <li>The updater, three times (beta.1 to beta.2, beta.4 to beta.5, beta.5 to beta.6)</li>
         </ul>
       </div>
       <div class="col">

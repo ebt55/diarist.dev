@@ -27,8 +27,8 @@
     <p class="rule">CUDA package: the NVIDIA driver has to be new enough for CUDA 13. R580 or newer is the estimate; 610.88 is measured working.</p>
     <p class="rule">CUDA kernels are built for Turing (sm_75), Ampere (sm_86), Ada (sm_89) and Blackwell (sm_120). An NVIDIA card older than Turing uses the Vulkan package.</p>
     <p class="rule">Vulkan package: measured on the RTX 3080 only, 16 Oct 2026, through the app's own path on a 5-minute clip of the AMI meeting: 25 to 28 times real time (CUDA 67 to 69 on the same clip), the same word count as CUDA with 3.2 percent of the words different, and the same speakers. Nothing is known about AMD or Intel GPUs yet.</p>
-    <p class="rule">The setup screen checks the GPU (NVML for NVIDIA, DXGI for any vendor), preselects the package and lets you change it. Package sizes: CUDA 98 MB, Vulkan 19 MB, CPU 6 MB. The app reads free GPU memory before it starts a job.</p>
-    <p class="rule">Punctuation is the same on every PC: the punctuation model (Horizon-Labs punctuation-restoration-small, 306 MB with its tokenizer, ONNX Runtime 1.31.0 and licence files) runs on the CPU after the speech pass, whatever the package, and uses no GPU memory.</p>
+    <p class="rule">The setup screen checks the GPU (NVML for NVIDIA, DXGI for any vendor), preselects the package and lets you change it. Package sizes: CUDA 102 MB, Vulkan 19 MB, CPU 6 MB. The app reads free GPU memory before it starts a job.</p>
+    <p class="rule">Punctuation is the same on every PC: the punctuation model (Horizon-Labs punctuation-restoration-small, 320 MB with its tokenizer, ONNX Runtime 1.31.0 and licence files) runs on the CPU after the speech pass, whatever the package, and uses no GPU memory.</p>
   </section>
 
   <section id="diarization" aria-labelledby="diarization-title">
@@ -45,9 +45,9 @@
 
   <section id="measured" aria-labelledby="measured-title">
     <h2 id="measured-title">Measured in Diarist</h2>
-    <p>The evaluation harness in the repository runs the app's own command-line tool over the author's meetings and one public AMI meeting, and scores the result against a reference. Everything in this section was measured on the development PC, with an RTX 3080 10 GB, and each part says when. Imports and the pass after Stop run with the file settings 0.1.0-beta.5 ships: the speech model at its full lookahead (1.12 s) and the diarizer with its offline geometry. The chart is the 0.1.0-beta.5 release check, {{measured_long}}, which also collapses repeated-word bursts and adds punctuation; punctuation never changes a word, so the scores are the same without it.</p>
+    <p>The evaluation harness in the repository runs the app's own command-line tool over the author's meetings and one public AMI meeting, and scores the result against a reference. Everything in this section was measured on the development PC, with an RTX 3080 10 GB, and each part says when. Imports and the pass after Stop run with the file settings 0.1.0-beta.6 ships: the speech model at its full lookahead (1.12 s) and the diarizer with its offline geometry. The chart is the 0.1.0-beta.6 release check, {{measured_long}}, which also collapses repeated-word bursts and adds punctuation; punctuation never changes a word, so the scores are the same without it. Its words are those of the 0.1.0-beta.5 check on every session.</p>
 {{chart_measured}}
-    <p>Over the whole evaluation set, 36 recordings and 28 hours, cpWER with the EN model went from 11.01 percent with 0.1.0-beta.4 to 10.85, all of it from the collapsed bursts, and stayed at 11.30 with Nemotron 3.5; no recording got worse.</p>
+    <p>Over the whole evaluation set, 36 recordings and 28 hours, cpWER with the EN model went from 11.01 percent with 0.1.0-beta.4 to 10.85 with 0.1.0-beta.5, all of it from the collapsed bursts, and stayed at 11.30 with Nemotron 3.5; no recording got worse. 0.1.0-beta.6 writes the same words on every recording, with both models.</p>
     <p>Speaker attribution was close with both models: 0.2 to 0.3 percent of words went to the wrong speaker on the four Zoom meetings, 2.2 to 2.3 on the far-field AMI meeting; within a second of a speaker change, 5.5 to 7.8 percent with Nemotron 3.5 and 5.6 to 12.7 with the EN model (16 Oct 2026). So the choice comes down to the words: the EN model keeps more of what was said; Nemotron 3.5 drops about 40 percent of filler words, keeps quiet speech the EN model drops, and covers 40+ languages with automatic detection.</p>
     <p>Peak GPU memory was measured on 15 Oct 2026. The 560 ms live lookahead of 0.1.0-beta.5 does not change it: measured on 27 Oct 2026, the live server with both sessions stayed within 3 MiB per session of the runtime's default lookahead.</p>
 {{chart_vram}}
@@ -88,7 +88,7 @@
       <li>Open ASR leaderboard: average WER over its English test sets. As cited in the model guide, October 2026.</li>
       <li>The Nemotron 3.5 ASR Streaming model card: FLEURS word error rates per language at the 1.12 s setting. As cited in the model guide, October 2026.</li>
       <li><a href="{{blob_base}}docs/04-model-guide.md">docs/04-model-guide.md</a>, the model and hardware guide (v0.3, 16 Oct 2026; punctuation added 26 Oct 2026): the published tables, the package measurements and rules, the GPU memory measurements, the language table and the punctuation model. Rendered here as <a href="{{root}}docs/models/">Models and hardware</a>.</li>
-      <li><a href="{{blob_base}}docs/eval/">docs/eval</a>: the evaluation runs of 15 and 16 Oct 2026, and the 0.1.0-beta.5 release check, the live lookahead and the punctuation measurements of 26 and 27 Oct 2026. The recordings and the pipeline are described in <a href="{{root}}docs/eval/">How we measure</a>.</li>
+      <li><a href="{{blob_base}}docs/eval/">docs/eval</a>: the evaluation runs of 15 and 16 Oct 2026, the 0.1.0-beta.5 release check, the live lookahead and the punctuation measurements of 26 and 27 Oct 2026, and the 0.1.0-beta.6 release check of 3 Nov 2026. The recordings and the pipeline are described in <a href="{{root}}docs/eval/">How we measure</a>.</li>
       <li><a href="{{benchmarks_url}}">docs/eval/benchmarks.json</a>: the data file behind the charts, updated {{updated}}. Where each block takes its numbers from, as the file states it:</li>
     </ul>
     <ul class="plain sources-from">
