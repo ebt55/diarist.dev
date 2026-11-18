@@ -474,7 +474,7 @@ export function diarizationChart(b: Benchmarks, blobBase: string): { html: strin
     })),
   });
   const caption =
-    `${sourceLink(d.source, d.url)}, as cited in the <a href="${esc(blobBase)}docs/04-model-guide.md">model guide</a> on ${esc(b.updated)}. ` +
+    `${sourceLink(d.source, d.url)}, as cited in the <a href="${esc(blobBase)}docs/04-model-guide.md">model guide</a>. ` +
     `DER is the share of audio time assigned to the wrong speaker, missed or falsely detected; collar 0 means no leeway around speaker changes, and overlapping speech is scored. Published numbers, not ours.`;
   const table = [
     "<table>",

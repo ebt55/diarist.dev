@@ -53,7 +53,7 @@
 {{chart_vram}}
     <h3>Speed</h3>
     <ul class="plain">
-      <li>Import: the speech step runs about 78 times real time with the EN model and 81 with Nemotron 3.5 on the RTX 3080. That step is speech recognition and speaker labels in one pass, with the model load. Measured over the seven evaluation sessions, 324 minutes of audio, in the 0.1.0-beta.6 release check of 3 Nov 2026. Converting the file to the runtime's format and punctuation come on top, and the whole import has not been timed on its own.</li>
+      <li>Import: the speech step runs about 78 times real time with the EN model and 81 with Nemotron 3.5 on the RTX 3080. That step is speech recognition and speaker labels in one pass, with the model load. Measured over the seven evaluation sessions, 324 minutes of audio, in the 0.1.0-beta.6 release check of 3 Nov 2026. Converting the file to the runtime's format and punctuation are not in that figure.</li>
       <li>Punctuation, after the speech pass: about 5 to 6 seconds of CPU per hour of audio (5.3 to 5.6 over the 28 hours of the evaluation set), 0.65 GB of RAM while it runs, no GPU memory. Measured on the development PC, 27 Oct 2026.</li>
       <li>Live: the first words of an utterance appear about {{live_first_text}} s after they are spoken, and two channels (microphone and system audio) keep up in real time. Since 0.1.0-beta.5 live recording runs with 560 ms of lookahead, which makes fewer errors than the runtime's 160 ms, where words appeared after about 0.14 s. Measured on an RTX 3080 10 GB, 27 Oct 2026.</li>
     </ul>

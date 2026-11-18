@@ -52,7 +52,7 @@ Primary button: **Download for Windows** with a small "beta" tag. Under it, one 
 
 Signing line, small (since 18 Nov 2026): the installer is not code-signed yet, what SmartScreen and Defender's ransomware rule do about it with a link to the known issue, and that the SHA-256 is on the release page.
 
-Platform line, small: "Windows only for now. macOS is not planned: nobody on the project owns a Mac." (Until 18 Nov 2026 it said "Linux is planned", which no plan backs.)
+Platform line, small: "Windows only for now. macOS is not planned: nobody on the project owns a Mac." (Until 18 Nov 2026 it said "Linux is planned".)
 
 Agent line, small: "If you use a coding agent (Claude Code, Codex or similar), the agent setup guide lets it check your PC, pick the models and set everything up." with "agent setup guide" linking to `/docs/agent-setup/`.
 
