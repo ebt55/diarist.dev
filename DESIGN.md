@@ -60,7 +60,7 @@ Visual, right of the copy on desktop and below it on phones: the **transcript ca
 
 ```
 00:04  Speaker 1   Let's start with last week's numbers.
-00:09  Speaker 2   An hour of audio came back in under three minutes.
+00:09  Speaker 2   The speech step ran at about 78 times real time.
 00:15  me          And nothing left the machine.
 00:18  Speaker 3   Then we ship the beta.
 ```
