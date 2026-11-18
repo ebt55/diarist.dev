@@ -16,7 +16,8 @@
         <a class="btn btn-secondary" href="{{repo_url}}">View on GitHub</a>
       </div>
       <p class="meta">{{version}}, {{installer_size}} installer. First run downloads the runtime (102 MB) and the recommended models with punctuation (1.13 GB). Windows 10 and 11, NVIDIA GPU recommended. <a href="{{release_url}}">Release notes and checksum</a>. <a href="{{root}}code-signing/">Code signing policy</a></p>
-      <p class="small">Linux is planned. macOS is not: nobody on the project owns a Mac.</p>
+      <p class="small">The installer is not code-signed yet, so Windows SmartScreen asks before it runs ("More info", then "Run anyway"). Microsoft Defender's ransomware protection, when an administrator has turned it on, can also block a new build (<a href="{{root}}docs/known-issues/#windows-and-the-installer">how to allow it</a>). The installer's SHA-256 is on the release page, so you can check the file before you run it.</p>
+      <p class="small">Windows only for now. macOS is not planned: nobody on the project owns a Mac.</p>
       <p class="small">If you use a coding agent (Claude Code, Codex or similar), the <a href="{{root}}docs/agent-setup/">agent setup guide</a> lets it check your PC, pick the models and set everything up.</p>
     </div>
 
@@ -49,9 +50,9 @@
       </div>
       <div class="col">
         <h3>From a file</h3>
-        <p>Drop in m4a, mp3, wav, flac, ogg, mp4, mkv and more. On an RTX 3080 an hour of audio takes about two minutes, about 30 times faster than real time over the whole import.</p>
+        <p>Drop in m4a, mp3, wav, flac, ogg, mp4, mkv and more. On an RTX 3080 the speech step runs about 78 times faster than real time with the EN model, measured on seven recordings (324 minutes) on 3 Nov 2026. That step is speech recognition and speaker labels in one pass, model load included. Converting the file and adding punctuation come on top.</p>
         <ul class="facts">
-          <li>English by default; 40+ languages with Nemotron 3.5, 30 of them offered in the app's language lists.</li>
+          <li>English by default. Nemotron 3.5's model card lists 40+ languages. The app offers 30 of them, and eight had a 10-minute smoke test here.</li>
           <li>Peak GPU memory 2.6 GB with the English model, 1.82 GB with Nemotron 3.5, measured on a 77-minute file.</li>
           <li>File jobs wait until a recording stops, so the two never run at the same time.</li>
           <li>Punctuation and capitals are added on the CPU, about 5 to 6 seconds per hour of audio, without changing a word.</li>
@@ -65,7 +66,7 @@
     <h2 id="speakers-title">Speaker separation</h2>
     <div class="cols-2 cols-wide-left">
       <div class="col">
-        <p>Speaker separation runs on NVIDIA's Nemotron 3 Diarization. On VoiceArena Diarization-Bench v1, the one independent benchmark that scores every diarizer the same way, it has the lowest error rate of the systems listed: DER 14.7, against 19 to 31 for the others. Up to eight speakers per recording.</p>
+        <p>Speaker separation runs on NVIDIA's Nemotron 3 Diarization. On VoiceArena's public Diarization Bench, which scores each listed system on the same 139 English recordings, it has the lowest error rate of the six systems: DER 14.7, against 18.7 to 30.6 for the others. That is VoiceArena's published number (early results, accessed 18 Nov 2026), not ours. Up to eight speakers per recording.</p>
         <p>Measured on the author's own Zoom meetings on an RTX 3080: 0.2 to 0.3 percent of words went to the wrong speaker; within a second of a speaker change, 5.5 to 7.8 percent with Nemotron 3.5 and 5.6 to 12.7 with the EN model.</p>
         <p class="links"><a href="{{root}}models/#diarization">The numbers, with charts</a> <a href="{{root}}docs/eval/">How we measure</a></p>
       </div>
@@ -158,7 +159,7 @@
     <ul class="plain models">
       <li>Nemotron 3 Diarization (speakers, 107 MB)</li>
       <li>Nemotron Speech Streaming EN 0.6B (English, default, 700 MB)</li>
-      <li>Nemotron 3.5 ASR Streaming (40+ languages, optional, 742 MB)</li>
+      <li>Nemotron 3.5 ASR Streaming (40+ languages by its model card, optional, 742 MB)</li>
       <li>Horizon-Labs punctuation-restoration-small with ONNX Runtime 1.31.0 (punctuation and capitals, on the CPU, default, 320 MB)</li>
     </ul>
     <p><a href="{{root}}models/">Charts and the numbers behind these choices</a></p>
@@ -173,7 +174,7 @@
       <li><strong>The punctuation model comes with its authors' licence files.</strong> It is pinned to their v1.1.1 release, which adds a <code>LICENSE</code> and a <code>NOTICE</code>, and Diarist installs those two files instead of the licence text it hosted itself. The model is the same file, so nothing is downloaded again and the punctuation is the same. A model folder from beta.5 shows the two files (13 kB) as missing until Download recommended fetches them.</li>
       <li><strong>One line per download.</strong> A download made of several files, such as the punctuation model's eight, is one line in Settings and on the first-run screen. It says what is missing beside its Download button, and lists every file's address and SHA-256 under "Files and addresses".</li>
       <li><strong>Sizes in decimal units.</strong> The first-run screen and Settings give download sizes in decimal megabytes and gigabytes, as the documentation does: the EN model is 700 MB, and the default download 1.23 GB with the CUDA runtime.</li>
-      <li><strong>File transcripts are unchanged.</strong> On the evaluation set, 36 recordings and 28 hours, every word is the same as with beta.5, with both speech models. Word error stays at 10.85 percent with the EN model and 11.30 with Nemotron 3.5. Measured on one PC.</li>
+      <li><strong>File transcripts are unchanged.</strong> On the evaluation set, 36 recordings and 28 hours, every word is the same as with beta.5, with both speech models. Speaker-attributed word error (cpWER) stays at 10.85 percent with the EN model and 11.30 with Nemotron 3.5. 35 of the 36 references are Zoom's machine transcripts. Measured on one PC.</li>
     </ul>
     <h3>What changed in beta.5</h3>
     <ul class="plain whatsnew">
@@ -181,15 +182,15 @@
       <li><strong>Repeated-word loops are collapsed.</strong> The EN model sometimes writes one word many times in a burst ("the the the the"). After Stop and on imports each burst is now kept as one word; repeats at speaking pace, such as "no no no no" or a stutter, stay. The meeting details say how many bursts were collapsed. On by default; a setting without a switch in the app keeps every word in transcripts built afterwards.</li>
       <li><strong>Process again.</strong> A finished recording whose live transcript was kept (Settings, "Keep the live transcript", off by default) can be processed again from its stored audio with today's models and settings. The audio is only read; the new transcript becomes the one shown, every earlier one stays, and names given while recording carry over.</li>
       <li><strong>Less of the other side in "me" without headphones.</strong> When you say almost nothing during a long meeting played on speakers, the echo gate now removes far more of what is left of a loud echo: on one long recording, the words in "me" that look like echo went from 253 to 42, and every other recording and test fixture came out as before. Stored meetings change only with Process again. Still open: your own words spoken entirely over loud speech from the other side can be removed (about one in four on a test fixture); headphones avoid it, and a fix is planned.</li>
-      <li><strong>Live text is more accurate.</strong> Live recording runs both Nemotron models with 560 ms of lookahead instead of 160 ms. Words show about half a second after they are spoken, against about 0.14 s before, with fewer errors: on the hand-labelled AMI meeting live word error went from 19.75 to 18.03 percent with the EN model and from 23.05 to 21.55 with Nemotron 3.5, and it was lower on all six Zoom meetings measured. GPU memory is unchanged.</li>
+      <li><strong>Live text is more accurate.</strong> Live recording runs both Nemotron models with 560 ms of lookahead instead of 160 ms. Words show about half a second after they are spoken, against about 0.14 s before, with fewer errors: on the hand-labelled AMI meeting live cpWER, against its human transcript, went from 19.75 to 18.03 percent with the EN model and from 23.05 to 21.55 with Nemotron 3.5, and it was lower on all six Zoom meetings measured. GPU memory is unchanged.</li>
       <li><strong>Diarist downloads models itself.</strong> Up to beta.4 the runtime fetched them through Windows' <code>curl.exe</code>, which failed on networks that block certificate revocation checks. Diarist's own downloader, which the engine install already used, works over https only, resumes an interrupted download where it stopped, and checks each file's size and SHA-256. A per-app firewall now sees <code>diarist.exe</code> for every download.</li>
       <li><strong>Data folders with long paths work,</strong> also on a network share. Imports and recordings failed once the runtime's path in the data folder reached 260 characters, and so did the database; Diarist now passes long paths in Windows' extended-length form. Checked with a 264-character data folder; a live recording from one is still to be tried by hand.</li>
-      <li><strong>Measured on one PC.</strong> On the evaluation set, 36 recordings and 28 hours (35 of the author's own and the public AMI meeting), word error with the EN model fell from 11.01 to 10.85 percent, all of it from the collapsed loops, and stayed at 11.30 with Nemotron 3.5. No recording got worse.</li>
+      <li><strong>Measured on one PC.</strong> On the evaluation set, 36 recordings and 28 hours (35 of the author's own and the public AMI meeting), speaker-attributed word error (cpWER) with the EN model fell from 11.01 to 10.85 percent, all of it from the collapsed loops, and stayed at 11.30 with Nemotron 3.5. No recording got worse. The author's 35 recordings are scored against Zoom's machine transcripts, the AMI meeting against a human one.</li>
       <li><strong>The database is upgraded</strong> at the first start, and the old one is kept as <code>diarist.db.bak-3</code>. Beta.4 cannot open the upgraded database, so going back to beta.4 means restoring that copy.</li>
     </ul>
     <h3>What changed in beta.2, beta.3 and beta.4</h3>
     <ul class="plain whatsnew">
-      <li><strong>Imports and the pass after Stop are more accurate.</strong> They run the speech model at its full lookahead and the speaker model with its offline geometry. On the hand-labelled AMI meeting the word error rate went from 19.8 to 18.0 percent with the EN model and from 23.0 to 20.7 with Nemotron 3.5, every Zoom meeting in the evaluation set improved, and the speech pass runs about 2.6 times faster. Live recording keeps its low-latency settings.</li>
+      <li><strong>Imports and the pass after Stop are more accurate.</strong> They run the speech model at its full lookahead and the speaker model with its offline geometry. On the hand-labelled AMI meeting cpWER, against its human transcript, went from 19.8 to 18.0 percent with the EN model and from 23.0 to 20.7 with Nemotron 3.5, every Zoom meeting in the evaluation set improved, and the speech pass runs about 2.6 times faster. Live recording keeps its low-latency settings.</li>
       <li><strong>Languages follow the model.</strong> The language lists show what the installed speech models cover, 30 languages with Nemotron 3.5. A recording or import in a language the selected model does not cover runs on an installed model that does, or offers the Nemotron 3.5 download first. Imports ask for the language, and Japanese and Chinese are now passed to the model instead of running as automatic detection.</li>
       <li><strong>Crash reports stay on your PC.</strong> A crash leaves a report in the data folder's logs; the next launch says so and offers Copy report for a bug report. Nothing is sent anywhere.</li>
       <li><strong>The Vulkan and CPU runtime packages run.</strong> Beta.1 always asked for the CUDA device, so they could not transcribe or record. Measured on the development PC only: Vulkan on an RTX 3080 at 25 to 28 times real time, CPU on a Ryzen 9 5900X at about 5 times.</li>

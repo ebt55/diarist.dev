@@ -50,7 +50,9 @@ Subhead:
 
 Primary button: **Download for Windows** with a small "beta" tag. Under it, one muted line: "0.1.0-beta.1, 6.7 MB installer. First run downloads the runtime and models, about 870 MB. Windows 10 and 11, NVIDIA GPU recommended. Release notes and checksum." Secondary button: **View on GitHub**.
 
-Platform line, small: "Linux is planned. macOS is not: nobody on the project owns a Mac."
+Signing line, small (since 18 Nov 2026): the installer is not code-signed yet, what SmartScreen and Defender's ransomware rule do about it with a link to the known issue, and that the SHA-256 is on the release page.
+
+Platform line, small: "Windows only for now. macOS is not planned: nobody on the project owns a Mac." (Until 18 Nov 2026 it said "Linux is planned", which no plan backs.)
 
 Agent line, small: "If you use a coding agent (Claude Code, Codex or similar), the agent setup guide lets it check your PC, pick the models and set everything up." with "agent setup guide" linking to `/docs/agent-setup/`.
 
@@ -75,7 +77,9 @@ Unchanged from v0.1: two columns, "Live" and "From a file", each a short paragra
 
 No lead sentence. Body:
 
-> Speaker separation runs on NVIDIA's Nemotron 3 Diarization. On VoiceArena Diarization-Bench v1, the one independent benchmark that scores every diarizer the same way, it has the lowest error rate of the systems listed: DER 14.7, against 19 to 31 for the others. Up to eight speakers per recording.
+> Speaker separation runs on NVIDIA's Nemotron 3 Diarization. On VoiceArena's public Diarization Bench, which scores each listed system on the same 139 English recordings, it has the lowest error rate of the six systems: DER 14.7, against 18.7 to 30.6 for the others. That is VoiceArena's published number (early results, accessed 18 Nov 2026), not ours. Up to eight speakers per recording.
+
+(Changed 18 Nov 2026: the first version called VoiceArena "the one independent benchmark". The page does not say whether it is affiliated with any listed vendor, and it has no version number.)
 
 > Measured on the author's own Zoom meetings on an RTX 3080: 0.2 to 0.6 percent of words went to the wrong speaker; within a second of a speaker change, 7 to 9 percent.
 

@@ -457,7 +457,7 @@ export function diarizationChart(b: Benchmarks, blobBase: string): { html: strin
   const axisMax = Math.ceil(Math.max(...rows.map((r) => r.value)) / 5) * 5;
   const ticks = [];
   for (let t = 0; t <= axisMax; t += 10) ticks.push(t);
-  const title = "Diarization error rate on VoiceArena Diarization-Bench v1";
+  const title = "Diarization error rate on VoiceArena Diarization Bench";
   const chart = barChart({
     id: "c-diar",
     title,
